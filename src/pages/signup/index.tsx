@@ -25,6 +25,10 @@ export const Page = () => {
     const [password, setPassword] = useState<string>('')
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const toast = useToast()
+    const actionCodeSettings = {
+        url: 'https://moai-app.vercel.app/',
+        handleCodeInApp: false,
+    }
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         setIsLoading(true)
@@ -36,7 +40,7 @@ export const Page = () => {
                 email,
                 password
             )
-            await sendEmailVerification(userCredential.user)
+            await sendEmailVerification(userCredential.user, actionCodeSettings)
             setEmail('')
             setPassword('')
             toast({

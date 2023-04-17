@@ -1,3 +1,4 @@
+// 環境変数は.つなぎじゃ無いとnext.jsの変換で失敗する
 export const FIREBASE_API_KEY =
     process.env.NEXT_PUBLIC_FIREBASE_API_KEY ?? ''
 export const FIREBASE_AUTH_DOMAIN =

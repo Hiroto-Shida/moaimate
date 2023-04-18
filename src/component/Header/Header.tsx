@@ -1,20 +1,31 @@
-import { Button, chakra, Container, Heading, useToast } from '@chakra-ui/react'
+import {
+    Avatar,
+    Button,
+    chakra,
+    Container,
+    Flex,
+    Heading,
+    Menu,
+    MenuButton,
+    MenuItem,
+    MenuList,
+    Spacer,
+    useToast,
+} from '@chakra-ui/react'
 import { useAuthContext } from '@src/feature/auth/provider/AuthProvider'
 import { FirebaseError } from '@firebase/util'
 import { getAuth, signOut } from 'firebase/auth'
-import { useState } from 'react'
-import { useRouter } from 'next/router'
-// import { useAuth } from "../contexts/AuthContext";
+// import { useRouter } from 'next/router'
+// import Link from 'next/link'
+import { Navigate } from '@src/component/Navigate/Navigate'
+import { useRouter } from '@src/hooks/useRouter/useRouter'
 
 export const Header = () => {
     const { user } = useAuthContext()
-    const [isLoading, setIsLoading] = useState<boolean>(false)
     const toast = useToast()
     const { push } = useRouter()
-    // const { currentUser, logout, sendEmailVerification } = useAuth();
 
     const handleSignOut = async () => {
-        setIsLoading(true)
         try {
             const auth = getAuth()
             await signOut(auth)
@@ -23,34 +34,52 @@ export const Header = () => {
                 status: 'success',
                 position: 'top',
             })
-            push('/signin')
+            // push('/signin')
+            push((path) => path.signin.$url())
         } catch (e) {
             if (e instanceof FirebaseError) {
                 console.log(e)
             }
-        } finally {
-            setIsLoading(false)
         }
     }
 
 
     return (
-        <chakra.header py={4} bgColor={'blue.600'}>
-            <Container maxW={'container.lg'}>
-                <Heading color={'white'}>
-                    {user?.emailVerified ? (
-                        <Button
-                            colorScheme={'teal'}
-                            onClick={handleSignOut}
-                            isLoading={isLoading}
-                        >
-                            サインアウト
-                        </Button>
-                    ) : (
-                        'ログアウト中'
-                    )}
-                </Heading>
-            </Container>
-        </chakra.header>
+        <>
+            <chakra.header py={4} bgColor={'blue.600'}>
+                <Container maxW={'container.lg'}>
+                    <Flex>
+                        <Navigate href={(path) => path.$url()}>
+                            {/* <Link href={'/'} passHref> */}
+                            <Heading
+                                _hover={{
+                                    opacity: 0.8,
+                                }}
+                                color={'white'}>Firebase Realtime Chat</Heading>
+                            {/* </Link> */}
+                        </Navigate>
+                        <Spacer aria-hidden />
+                        {user?.emailVerified ? (
+                            <Menu>
+                                <MenuButton>
+                                    <Avatar flexShrink={0} width={10} height={10} />
+                                </MenuButton>
+                                <MenuList py={0}>
+                                    <MenuItem onClick={handleSignOut}>サインアウト</MenuItem>
+                                </MenuList>
+                            </Menu>
+                        ) : (
+                            <Navigate href={(path) => path.signin.$url()}>
+                                {/* <Link href={'/signin'} passHref> */}
+                                <Button colorScheme={'teal'}>
+                                    サインイン
+                                </Button>
+                                {/* </Link> */}
+                            </Navigate>
+                        )}
+                    </Flex>
+                </Container >
+            </chakra.header >
+        </>
     )
 }

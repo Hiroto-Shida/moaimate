@@ -1,10 +1,12 @@
 import {
+    Box,
     Avatar,
     Button,
     chakra,
     Container,
     Flex,
     Heading,
+    Text,
     Menu,
     MenuButton,
     MenuItem,
@@ -61,6 +63,9 @@ export const Header = () => {
                         <Spacer aria-hidden />
                         {user?.emailVerified ? (
                             <Menu>
+                                <Box h={10} mr={3} color='#fff' display='flex' justifyContent='center' alignItems='center'>
+                                    <Text align='center' fontSize='md'>{user?.email}でログイン中</Text>
+                                </Box>
                                 <MenuButton>
                                     <Avatar flexShrink={0} width={10} height={10} />
                                 </MenuButton>

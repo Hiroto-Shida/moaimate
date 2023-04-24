@@ -11,22 +11,27 @@ import {
     Text,
 } from '@chakra-ui/react'
 import { FormEvent, useEffect, useRef, useState } from 'react'
-import { getDatabase, onChildAdded, push, ref } from '@firebase/database'
+import { getDatabase, onChildAdded, onValue, push, set, ref } from '@firebase/database'
 import { FirebaseError } from '@firebase/util'
 import { AuthGuard } from '@src/feature/auth/component/AuthGuard/AuthGuard'
+import { useAuthContext } from '@src/feature/auth/provider/AuthProvider'
 
 // const _message = '確認用メッセージです。'
 // const _messages = [...Array(10)].map((_, i) => _message.repeat(i + 1))
 
 type MessageProps = {
+    userName: string | null | undefined
     message: string
 }
 
-const Message = ({ message }: MessageProps) => {
+const Message = ({ userName, message }: MessageProps) => {
     return (
         <Flex alignItems={'start'}>
             <Avatar />
             <Box ml={2}>
+                <Text fontSize='xs' rounded={'md'}>
+                    {userName}
+                </Text>
                 <Text bgColor={'gray.200'} rounded={'md'} px={2} py={1}>
                     {message}
                 </Text>
@@ -37,14 +42,21 @@ const Message = ({ message }: MessageProps) => {
 
 export const Page = () => {
     const messagesElementRef = useRef<HTMLDivElement | null>(null)
+    const { user } = useAuthContext()
+    const [userName, setUserName] = useState<string | null | undefined>(undefined)
     const [message, setMessage] = useState<string>('')
 
     const handleSendMessage = async (e: FormEvent<HTMLFormElement>) => {
+        setUserName(user?.email) // 一旦メールアドレスを名前とする
+        // console.log(user?.email)
         e.preventDefault()
         try {
+            // databaseを参照して取得
             const db = getDatabase()
-            const dbRef = ref(db, 'chat')
-            await push(dbRef, {
+            const dbRef_chat = ref(db, 'chat')
+            // pushはデータを書き込む際にユニークキーを自動で生成
+            await push(dbRef_chat, {
+                userName,
                 message,
             })
             setMessage('')
@@ -53,17 +65,23 @@ export const Page = () => {
                 console.log(e)
             }
         }
+        // console.log(user)
     }
 
-    const [chats, setChats] = useState<{ message: string }[]>([])
+    const [chats, setChats] = useState<{ userName: string | null | undefined, message: string }[]>([])
 
+    // firebaseからチャットの送受信の取得
     useEffect(() => {
         try {
             const db = getDatabase()
-            const dbRef = ref(db, 'chat')
-            return onChildAdded(dbRef, (snapshot) => {
+            const dbRef_chat = ref(db, 'chat')
+            // onChildAddedは新しい子が追加されるたびに呼び出し
+            return onChildAdded(dbRef_chat, (snapshot) => {
+                // const test_message = snapshot.val()
+                // console.log(test_message)
                 const message = String(snapshot.val()['message'] ?? '')
-                setChats((prev) => [...prev, { message }])
+                const userName = String(snapshot.val()['userName'] ?? '')
+                setChats((prev) => [...prev, { userName, message }])
             })
         } catch (e) {
             if (e instanceof FirebaseError) {
@@ -73,6 +91,9 @@ export const Page = () => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
+
+
+    // firebaseからユーザ名登録の取得
 
     useEffect(() => {
         messagesElementRef.current?.scrollTo({
@@ -98,7 +119,7 @@ export const Page = () => {
                     ref={messagesElementRef}
                 >
                     {chats.map((chat, index) => (
-                        <Message message={chat.message} key={`ChatMessage_${index}`} />
+                        <Message userName={chat.userName} message={chat.message} key={`ChatMessage_${index}`} />
                     ))}
                 </Flex>
                 <Spacer aria-hidden />

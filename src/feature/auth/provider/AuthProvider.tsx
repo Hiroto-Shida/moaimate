@@ -39,4 +39,5 @@ export const AuthProvider = ({ children }: Props) => {
     return <AuthContext.Provider value={user}>{children}</AuthContext.Provider>
 }
 
+//  <AuthProvider>で囲まれた要素では useAuthContext を使って認証状態を取得可能
 export const useAuthContext = () => useContext(AuthContext)

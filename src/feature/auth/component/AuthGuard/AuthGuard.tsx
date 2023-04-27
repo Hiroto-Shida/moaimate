@@ -9,16 +9,16 @@ type Props = {
 }
 
 export const AuthGuard = ({ children }: Props) => {
-    const { user } = useAuthContext()
+    const user = useAuthContext()
     const { push } = useRouter()
-    console.log("emailVerified = ", user?.emailVerified)
+    // console.log("emailVerified = ", user?.emailVerified)
 
-    if (typeof user === 'undefined') {
+    if (typeof user?.user.userinfo === 'undefined') {
         return <Box>読み込み中...</Box>
     }
 
     // メール認証を終えてない場合
-    if ((user === null) || (!(user?.emailVerified))) {
+    if ((user?.user.userinfo === null) || (!(user?.user.userinfo?.emailVerified))) {
         // push('/signin')
         push((path) => path.signin.$url())
         return null

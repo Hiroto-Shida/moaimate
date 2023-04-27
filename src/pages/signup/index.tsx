@@ -28,7 +28,7 @@ export const Page = () => {
     const toast = useToast()
     const { push } = useRouter()
     const actionCodeSettings = {
-        url: 'https://moai-app.vercel.app/signin',
+        url: 'https://moai-app.vercel.app/chat',
         handleCodeInApp: false,
     }
 

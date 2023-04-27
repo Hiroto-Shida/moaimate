@@ -20,7 +20,7 @@ import { useAuthContext } from '@src/feature/auth/provider/AuthProvider'
 // const _messages = [...Array(10)].map((_, i) => _message.repeat(i + 1))
 
 type MessageProps = {
-    userName: string | null | undefined
+    userName: string
     message: string
 }
 
@@ -42,22 +42,19 @@ const Message = ({ userName, message }: MessageProps) => {
 
 export const Page = () => {
     const messagesElementRef = useRef<HTMLDivElement | null>(null)
-    const { user } = useAuthContext()
-    const [userName, setUserName] = useState<string | null | undefined>(undefined)
+    const user = useAuthContext()
     const [message, setMessage] = useState<string>('')
 
     const handleSendMessage = async (e: FormEvent<HTMLFormElement>) => {
-        setUserName(user?.email) // 一旦メールアドレスを名前とする
-        // console.log(user?.email)
-        e.preventDefault()
+        e.preventDefault() // リロード回避
         try {
             // databaseを参照して取得
             const db = getDatabase()
             const dbRef_chat = ref(db, 'chat')
             // pushはデータを書き込む際にユニークキーを自動で生成
             await push(dbRef_chat, {
-                userName,
-                message,
+                userName: user?.user.username,
+                message: message,
             })
             setMessage('')
         } catch (e) {
@@ -68,7 +65,7 @@ export const Page = () => {
         // console.log(user)
     }
 
-    const [chats, setChats] = useState<{ userName: string | null | undefined, message: string }[]>([])
+    const [chats, setChats] = useState<{ userName: string, message: string }[]>([])
 
     // firebaseからチャットの送受信の取得
     useEffect(() => {
@@ -91,9 +88,6 @@ export const Page = () => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
-
-
-    // firebaseからユーザ名登録の取得
 
     useEffect(() => {
         messagesElementRef.current?.scrollTo({

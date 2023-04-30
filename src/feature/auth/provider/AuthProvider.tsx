@@ -87,7 +87,7 @@ export const AuthProvider = ({ children }: Props) => {
         try {
             const db = getDatabase()
             const dbRef_user = ref(db, `user/${user.userinfo?.uid}`)
-            console.log('uid = ', user.userinfo)
+            // console.log('uid = ', user.userinfo)
             // onValueは
             return onValue(dbRef_user, (snapshot) => {
                 // databaseにすでに名前登録がしてある場合

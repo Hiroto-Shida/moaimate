@@ -1,3 +1,5 @@
+/* 2D */
+/* 
 @keyframes rotateText {
     0% {
         transform: rotate(360deg);
@@ -33,13 +35,12 @@
     position: relative;
     width: var(--sizePx-200);
     height: var(--sizePx-200);
-    /* background-size: cover; */
+    background-size: cover;
     border-radius: 50%;
     animation: rotateLogo 5s linear infinite
 }
 
 .text {
-    /* font-family: Consolas; */
     font-family: sans-serif;
     font-size: 1.3rem;
     color: #fff;
@@ -54,4 +55,15 @@
     left: 50%;
     transform: rotate(var(--rotateDeg));
     transform-origin: 0 var(--sizePx-per2);
+} */
+
+
+
+
+/* 3Dモデル */
+.globe {
+    display: grid;
+    place-items: center;
+    height: 100vh;
+    cursor: grabbing;
 }

@@ -7,46 +7,82 @@ import {
   Center,
 } from '@chakra-ui/react'
 import styles from '../styles/Home.module.css'
-import React, { CSSProperties } from 'react';
+import React, { CSSProperties, Suspense } from 'react';
 
-const text = 'モアイ像とは南太平洋に位置するイースター島（チリ領）にある巨石像のことを指します'
-const sizePx = 500
-const charStyle = (i: number) => {
-  return {
-    '--sizePx': `${sizePx}px`,
-    '--sizePx-50': `${sizePx - 50}px`,
-    '--sizePx-per2': `${sizePx / 2}px`,
-    '--rotateDeg': `${i}deg`
-  }
-}
-const sizeStyle: CSSProperties = {
-  '--sizePx': `${sizePx}px`,
-  '--sizePx-50': `${sizePx - 50}px`,
-}
+import { useEffect } from 'react'
+import * as THREE from 'three'
+import { Canvas, Props, useLoader } from '@react-three/fiber';
+import { Environment, OrbitControls } from '@react-three/drei';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+
+// --- 2Dモアイ回転 ---
+// const text = 'モアイ像とは南太平洋に位置するイースター島（チリ領）にある巨石像のことを指します'
+// const sizePx = 500
+// const charStyle = (i: number) => {
+//   return {
+//     '--sizePx': `${sizePx}px`,
+//     '--sizePx-50': `${sizePx - 50}px`,
+//     '--sizePx-per2': `${sizePx / 2}px`,
+//     '--rotateDeg': `${i}deg`
+//   }
+// }
+// const sizeStyle: CSSProperties = {
+//   '--sizePx': `${sizePx}px`,
+//   '--sizePx-50': `${sizePx - 50}px`,
+// }
 
 
 const Page: NextPage = () => {
 
 
+  // --- 2Dモアイ回転 ---
+  // return (
+  //   <div className={styles.circle} style={sizeStyle}>
+  //     {/* <Center h='100%'> */}
+  //     <Image
+  //       src='/images/moai_normal.png'
+  //       alt='moai'
+  //       className={styles.logo}
+  //       style={sizeStyle}
+  //     />
+  //     {/* </Center> */}
+  //     <div className={styles.text}>
+  //       {text.split('').map((char, i) => (
+  //         <span key={i} className={styles.char} style={charStyle(i * 9)}>
+  //           {char}
+  //         </span>
+  //       ))}
+  //     </div>
+  //   </div>
+  // )
+
+  const Model = (props) => {
+    const gltf1 = useLoader(GLTFLoader, "/3d_images/moai.gltf").scene;
+    const gltf2 = gltf1.clone()
+    const gltf3 = gltf1.clone()
+    return (
+      <>
+        <primitive object={gltf1} scale={0.1} position={[0, 1.5, 0]} rotation={new THREE.Euler(0, Math.PI / 2, 0)} />
+        <primitive object={gltf2} scale={0.1} position={[0, 0, 0]} />
+        <primitive object={gltf3} scale={0.1} position={[0, -1.5, 0]} rotation={new THREE.Euler(0, -Math.PI / 2, 0)} />
+      </>
+    );
+  };
+
   return (
-    <div className={styles.circle} style={sizeStyle}>
-      {/* <Center h='100%'> */}
-      <Image
-        src='/images/moai_normal.png'
-        alt='moai'
-        className={styles.logo}
-        style={sizeStyle}
-      />
-      {/* </Center> */}
-      <div className={styles.text}>
-        {text.split('').map((char, i) => (
-          <span key={i} className={styles.char} style={charStyle(i * 9)}>
-            {char}
-          </span>
-        ))}
-      </div>
+    <div className={styles.globe}>
+      <Canvas shadows dpr={[1, 2]} camera={{ position: [0, 0, 7], fov: 50 }}>
+        <ambientLight intensity={0.7} />
+        <spotLight intensity={5} angle={0.1} penumbra={1} position={[10, 15, 10]} color='#fff' castShadow />
+        <Suspense fallback={null}>
+          <Model />
+          <Environment preset="city" />
+        </Suspense>
+        <OrbitControls autoRotate autoRotateSpeed={20.0} />
+      </Canvas>
     </div>
   )
+
 }
 
 export default Page

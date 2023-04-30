@@ -32,7 +32,7 @@ const Message = ({ userName, message }: MessageProps) => {
                 <Text fontSize='xs' rounded={'md'}>
                     {userName}
                 </Text>
-                <Text bgColor={'gray.200'} rounded={'md'} px={2} py={1}>
+                <Text border='1px' borderColor='brand.chatborder' rounded={'md'} px={2} py={1}>
                     {message}
                 </Text>
             </Box>
@@ -111,6 +111,8 @@ export const Page = () => {
                     overflowY={'auto'}
                     gap={2}
                     ref={messagesElementRef}
+                    border='1px'
+                    borderColor='brand.chatborder'
                 >
                     {chats.map((chat, index) => (
                         <Message userName={chat.userName} message={chat.message} key={`ChatMessage_${index}`} />

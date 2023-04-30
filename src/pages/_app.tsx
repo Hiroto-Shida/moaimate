@@ -22,7 +22,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         >
           <Component {...pageProps} />
         </chakra.main>
-        <Footer />
+        {/* <Footer /> */}
       </AuthProvider>
     </ChakraProvider>
   )

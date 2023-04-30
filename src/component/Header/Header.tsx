@@ -7,8 +7,16 @@ import {
     FormControl,
     FormLabel,
     Flex,
+    Link,
     Heading,
     Text,
+    Drawer,
+    DrawerBody,
+    DrawerFooter,
+    DrawerHeader,
+    DrawerOverlay,
+    DrawerContent,
+    DrawerCloseButton,
     Modal,
     ModalOverlay,
     ModalContent,
@@ -24,7 +32,9 @@ import {
     Spacer,
     useToast,
     useDisclosure,
+    Center,
 } from '@chakra-ui/react'
+import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons'
 import { useAuthContext } from '@src/feature/auth/provider/AuthProvider'
 import { FirebaseError } from '@firebase/util'
 import { getAuth, signOut } from 'firebase/auth'
@@ -34,44 +44,64 @@ import { Navigate } from '@src/component/Navigate/Navigate'
 import { useRouter } from '@src/hooks/useRouter/useRouter'
 import { FormEvent, useState } from 'react'
 import { getDatabase, onChildAdded, onValue, push, set, ref } from '@firebase/database'
+import React from 'react'
 
 
 export const Header = () => {
     const user = useAuthContext()
     // console.log("abc = ", user?.user)
     // const { username } = useAuthContext()
+    const [userName, setUserName] = useState<string>('')
     const toast = useToast()
     const { push } = useRouter()
     const { isOpen, onOpen, onClose } = useDisclosure()
-    const [userName, setUserName] = useState<string>('')
+    const btnRef = React.useRef<HTMLButtonElement>(null)
+    const [selectedItem, setSelectedItem] = useState<string>('')
+
+    const onOpenDialog = (name: string) => {
+        setSelectedItem(name)
+    }
+
+    const onCloseDialog = () => {
+        setSelectedItem('')
+    }
 
 
     const handleAccountSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         console.log('username = ', userName)
-        try {
-
-            // databaseに保存
-            const db = getDatabase()
-            const dbRef_chat = ref(db, `user/${user?.user.userinfo?.uid}/name`)
-            await set(dbRef_chat, userName)
-
-            // stateに保存
-            user?.setUser(state => {
-                return {
-                    ...state,
-                    username: userName // ユーザ名だけ設定
-                }
-            })
-
+        if (!userName.match(/\S/g)) {
             toast({
-                title: 'ユーザ名が変更されました',
-                status: 'success',
+                title: '空白以外の文字を入力してください',
+                status: 'error',
                 position: 'top',
             })
-        } catch (e) {
-            if (e instanceof FirebaseError) {
-                console.log(e)
+        } else {
+            try {
+
+                // databaseに保存
+                const db = getDatabase()
+                const dbRef_chat = ref(db, `user/${user?.user.userinfo?.uid}/name`)
+                await set(dbRef_chat, userName)
+
+                // stateに保存
+                user?.setUser(state => {
+                    return {
+                        ...state,
+                        username: userName // ユーザ名だけ設定
+                    }
+                })
+
+                toast({
+                    title: 'ユーザ名が変更されました',
+                    status: 'success',
+                    position: 'top',
+                })
+                onCloseDialog() // モーダルを閉じる
+            } catch (e) {
+                if (e instanceof FirebaseError) {
+                    console.log(e)
+                }
             }
         }
     }
@@ -97,7 +127,7 @@ export const Header = () => {
 
     return (
         <>
-            <chakra.header py={4} bgColor={'blue.600'}>
+            <chakra.header py={4}>
                 <Container maxW={'container.lg'}>
                     <Flex>
                         <Navigate href={(path) => path.$url()}>
@@ -116,18 +146,61 @@ export const Header = () => {
                                     <Box h={10} mr={3} color='#fff' display='flex' justifyContent='center' alignItems='center'>
                                         {/* <Text align='center' fontSize='md'>{user?.email}でログイン中</Text> */}
                                         <Text align='center' fontSize='md' as='b'>{user.user.username}</Text>
-                                        <Text align='center' fontSize='md'>でログイン中</Text>
                                     </Box>
-                                    <MenuButton>
+                                    {/* <MenuButton>
                                         <Avatar flexShrink={0} width={10} height={10} />
                                     </MenuButton>
                                     <MenuList py={0}>
                                         <MenuItem py={5} onClick={onOpen}>アカウント</MenuItem>
                                         <MenuItem onClick={handleSignOut}>サインアウト</MenuItem>
-                                    </MenuList>
+                                    </MenuList> */}
                                 </Menu>
+                                <Button ref={btnRef} onClick={() => onOpenDialog('Hamburger')}>
+                                    <HamburgerIcon />
+                                </Button>
+                                <Drawer
+                                    isOpen={selectedItem === 'Hamburger'}
+                                    placement='right'
+                                    onClose={onCloseDialog}
+                                    finalFocusRef={btnRef}
+                                >
+                                    <DrawerOverlay />
+                                    <DrawerContent>
+                                        <DrawerCloseButton />
+                                        <DrawerHeader>Menu</DrawerHeader>
+
+                                        <DrawerBody>
+                                            <Flex flexDirection={'column'} gap={2} alignItems={'start'}>
+                                                <Navigate href={(path) => path.$url()}>
+                                                    <Link lineHeight={1}>トップページ</Link>
+                                                </Navigate>
+                                                <Navigate href={(path) => path.signin.$url()}>
+                                                    <Link lineHeight={1}>サインイン</Link>
+                                                </Navigate>
+                                                <Navigate href={(path) => path.signup.$url()}>
+                                                    <Link lineHeight={1}>サインアップ</Link>
+                                                </Navigate>
+                                                <Navigate href={(path) => path.chat.$url()}>
+                                                    <Link lineHeight={1}>チャット</Link>
+                                                </Navigate>
+                                                <Button onClick={() => onOpenDialog('AccountSetting')}>アカウント設定</Button>
+                                                <Button onClick={handleSignOut}>サインアウト</Button>
+                                            </Flex>
+                                        </DrawerBody>
+
+                                        <DrawerFooter>
+                                            <Button variant='outline' mr={3} onClick={onClose}>
+                                                Close
+                                            </Button>
+                                        </DrawerFooter>
+                                    </DrawerContent>
+                                </Drawer>
+
                                 {/* ↓アカウント設定のモーダル↓ */}
-                                <Modal isOpen={isOpen} onClose={onClose}>
+                                <Modal
+                                    isOpen={selectedItem === 'AccountSetting'}
+                                    onClose={onCloseDialog}
+                                >
                                     <ModalOverlay />
                                     <ModalContent>
                                         <chakra.form onSubmit={handleAccountSubmit}>
@@ -157,10 +230,10 @@ export const Header = () => {
                                                 </FormControl>
                                             </ModalBody>
                                             <ModalFooter>
-                                                <Button colorScheme='blue' mr={3} onClick={onClose}>
+                                                <Button colorScheme='blue' mr={3} onClick={onCloseDialog}>
                                                     Close
                                                 </Button>
-                                                <Button type={'submit'} variant='ghost' onClick={onClose}>save</Button>
+                                                <Button type={'submit'} variant='ghost'>save</Button>
                                             </ModalFooter>
                                         </chakra.form>
                                     </ModalContent>

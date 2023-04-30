@@ -1,6 +1,12 @@
-import { extendTheme } from '@chakra-ui/react'
+import { extendTheme, type ThemeConfig } from '@chakra-ui/react'
+
+const config: ThemeConfig = {
+    initialColorMode: 'dark', // ダークモードをデフォルトに設定
+    useSystemColorMode: false, // OSの設定を使わせない
+}
 
 export const theme = extendTheme({
+    config: config,
     styles: {
         global: {
             'html, body,#__next': {
@@ -15,4 +21,9 @@ export const theme = extendTheme({
             },
         },
     },
+    colors: {
+        brand: {
+            chatborder: 'rgba(255,255,255,0.3)'
+        }
+    }
 })

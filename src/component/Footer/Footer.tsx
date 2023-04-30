@@ -1,3 +1,4 @@
+// 今は使ってない
 import { chakra, Container, Flex, Link } from '@chakra-ui/react'
 import { Navigate } from '@src/component/Navigate/Navigate'
 

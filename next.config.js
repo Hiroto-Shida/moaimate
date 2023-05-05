@@ -1,8 +1,8 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {
+const NextConfig = {
     reactStrictMode: true,
     swcMinify: true,
     experimental: { newNextLinkBehavior: false }, // chakraとNext/linkのエラー解決
 }
 
-module.exports = nextConfig
+module.exports = NextConfig

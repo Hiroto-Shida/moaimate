@@ -136,7 +136,7 @@ export const Header = () => {
                                 _hover={{
                                     opacity: 0.8,
                                 }}
-                                color={'white'}>MoaChat</Heading>
+                                color={'white'}>MoaiMate</Heading>
                             {/* </Link> */}
                         </Navigate>
                         <Spacer aria-hidden />

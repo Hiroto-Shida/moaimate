@@ -14,6 +14,7 @@ export const theme = extendTheme({
                 '&': {
                     height: '100svh',
                 },
+                overscrollBehavior: 'none',
             },
             '#__next': {
                 display: 'flex',

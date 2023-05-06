@@ -18,7 +18,7 @@
     border-radius: 100%;
     text-align: center;
     /* z-Index: "10"; */
-    overscroll-behavior-y: none;
+    /* overscroll-behavior-y: none; */
 }
 
 .controllerChild {
@@ -30,5 +30,5 @@
     border-radius: 100%;
     text-align: center;
     /* z-Index: "10"; */
-    overscroll-behavior-y: none;
+    /* overscroll-behavior-y: none; */
 }

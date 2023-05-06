@@ -6,6 +6,7 @@ import { AuthProvider } from '@src/feature/auth/provider/AuthProvider'
 import { Header } from '@src/component/Header/Header'
 import { Footer } from '@src/component/Footer/Footer'
 import { theme } from '@src/lib/chakra/theme'
+import { TouchProvider } from '@src/component/KeyAndTouchEvent/TouchProvider'
 
 initializeFirebaseApp()
 function MyApp({ Component, pageProps }: AppProps) {
@@ -13,16 +14,18 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <ChakraProvider theme={theme}>
       <AuthProvider>
-        <Header />
-        <chakra.main
-          flex={1}
-          display={'flex'}
-          flexDirection={'column'}
-          minHeight={0}
-        >
-          <Component {...pageProps} />
-        </chakra.main>
-        {/* <Footer /> */}
+        <TouchProvider>
+          <Header />
+          <chakra.main
+            flex={1}
+            display={'flex'}
+            flexDirection={'column'}
+            minHeight={0}
+          >
+            <Component {...pageProps} />
+          </chakra.main>
+          {/* <Footer /> */}
+        </TouchProvider>
       </AuthProvider>
     </ChakraProvider>
   )

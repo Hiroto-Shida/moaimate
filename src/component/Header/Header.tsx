@@ -170,21 +170,25 @@ export const Header = () => {
                                         <DrawerHeader>Menu</DrawerHeader>
 
                                         <DrawerBody>
-                                            <Flex flexDirection={'column'} gap={2} alignItems={'start'}>
+                                            <Flex flexDirection={'column'} gap={5} fontSize={20} alignItems={'start'}>
                                                 <Navigate href={(path) => path.$url()}>
-                                                    <Link lineHeight={1}>トップページ</Link>
+                                                    <Link lineHeight={1}>Top</Link>
                                                 </Navigate>
                                                 <Navigate href={(path) => path.signin.$url()}>
-                                                    <Link lineHeight={1}>サインイン</Link>
+                                                    <Link lineHeight={1}>Sign In</Link>
                                                 </Navigate>
                                                 <Navigate href={(path) => path.signup.$url()}>
-                                                    <Link lineHeight={1}>サインアップ</Link>
+                                                    <Link lineHeight={1}>Sign Up</Link>
                                                 </Navigate>
                                                 <Navigate href={(path) => path.chat.$url()}>
-                                                    <Link lineHeight={1}>チャット</Link>
+                                                    <Link lineHeight={1}>Chat</Link>
                                                 </Navigate>
-                                                <Button onClick={() => onOpenDialog('AccountSetting')}>アカウント設定</Button>
-                                                <Button onClick={handleSignOut}>サインアウト</Button>
+                                                <Navigate href={(path) => path.play.$url()}>
+                                                    <Link lineHeight={1}>Play</Link>
+                                                </Navigate>
+                                                <Spacer aria-hidden />
+                                                <Button onClick={() => onOpenDialog('AccountSetting')}>Setting</Button>
+                                                <Button onClick={handleSignOut}>Sign Out</Button>
                                             </Flex>
                                         </DrawerBody>
 
@@ -204,11 +208,11 @@ export const Header = () => {
                                     <ModalOverlay />
                                     <ModalContent>
                                         <chakra.form onSubmit={handleAccountSubmit}>
-                                            <ModalHeader>アカウント設定</ModalHeader>
+                                            <ModalHeader>Setting</ModalHeader>
                                             <ModalCloseButton />
                                             <ModalBody>
                                                 <FormControl>
-                                                    <FormLabel>登録メールアドレス</FormLabel>
+                                                    <FormLabel>E-Mail</FormLabel>
                                                     <Input
                                                         type={'email'}
                                                         name={'email'}
@@ -217,9 +221,9 @@ export const Header = () => {
                                                     />
                                                 </FormControl>
                                                 <FormControl>
-                                                    <FormLabel>アカウント名</FormLabel>
+                                                    <FormLabel>Your Name</FormLabel>
                                                     <Input
-                                                        placeholder='アカウント名'
+                                                        placeholder='Your Name'
                                                         type={'name'}
                                                         name={'name'}
                                                         // value={user.user.username}
@@ -243,7 +247,7 @@ export const Header = () => {
                             <Navigate href={(path) => path.signin.$url()}>
                                 {/* <Link href={'/signin'} passHref> */}
                                 <Button colorScheme={'teal'}>
-                                    サインイン
+                                    Sign In
                                 </Button>
                                 {/* </Link> */}
                             </Navigate>

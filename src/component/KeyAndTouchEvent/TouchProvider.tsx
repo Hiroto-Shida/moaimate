@@ -11,15 +11,6 @@ export function TouchProvider({ children }) {
     useEffect(() => {
         if (typeof document !== 'undefined') {
 
-            // コントローラー初期値設定
-            // setIs_touch(state => {
-            //     return {
-            //         ...state,
-            //         controllerX: 200,
-            //         controllerY: window.innerHeight - 200,
-            //     }
-            // })
-
             const touch_event = 'touchstart' in document;
             const touch_points = navigator.maxTouchPoints;
             if (touch_event !== undefined && 0 < touch_points) {

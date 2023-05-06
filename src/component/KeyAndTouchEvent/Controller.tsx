@@ -11,32 +11,35 @@ function handleContextMenu(evt: MouseEvent<HTMLDivElement>) {
     evt.preventDefault();
 }
 
-export const Controller = forwardRef<TypeControllerRefs, {}>((props, ref) => {
-    const ParentRef = useRef<HTMLDivElement>(null)
-    const ChildRef = useRef<HTMLDivElement>(null)
+export const Controller = forwardRef<TypeControllerRefs, {}>(
+    // (props, ref) => {
+    function ControllerSetting(props, ref) {
+        const ParentRef = useRef<HTMLDivElement>(null)
+        const ChildRef = useRef<HTMLDivElement>(null)
 
-    // refへのアクセスを制限
-    useImperativeHandle(ref, () => ({
-        ParentRef,
-        ChildRef,
-    }))
+        // refへのアクセスを制限
+        useImperativeHandle(ref, () => ({
+            ParentRef,
+            ChildRef,
+        }))
 
-    return (
-        <>
-            <div
-                id='controller_parent'
-                ref={ParentRef}
-                className={styles.controllerParent}
-                onContextMenu={handleContextMenu}
-            >
+        return (
+            <>
                 <div
+                    id='controller_parent'
+                    ref={ParentRef}
+                    className={styles.controllerParent}
                     onContextMenu={handleContextMenu}
-                    id='controller_child'
-                    className={styles.controllerChild}
-                    ref={ChildRef}
                 >
+                    <div
+                        onContextMenu={handleContextMenu}
+                        id='controller_child'
+                        className={styles.controllerChild}
+                        ref={ChildRef}
+                    >
+                    </div>
                 </div>
-            </div>
-        </>
-    )
-})
+            </>
+        )
+    }
+)

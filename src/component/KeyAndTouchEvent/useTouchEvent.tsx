@@ -31,7 +31,6 @@ export function useTouchEvent() {
         // コントローラー初期値設定
         touchMap.current.controllerX = 200
         touchMap.current.controllerY = window.innerHeight - 200
-        console.log('controller setting 1')
 
         // }
     }, [])

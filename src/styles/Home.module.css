@@ -1,5 +1,14 @@
-/* 3Dモデル */
-.globe {
+.topGlobe {
+    display: grid;
+    place-items: center;
+    height: 100vh;
+    width: 100vw;
+    cursor: grabbing;
+    position: absolute;
+    /* z-Index: "1"; */
+}
+
+.playGlobe {
     display: grid;
     place-items: center;
     /* height: 100vh; */

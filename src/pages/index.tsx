@@ -108,7 +108,7 @@ const Page: NextPage = () => {
   };
 
   return (
-    <div className={styles.globe}>
+    <div className={styles.topGlobe}>
       <Canvas shadows dpr={[1, 2]} camera={{ position: [0, 0, 7], fov: 50 }}>
         <ambientLight intensity={0.7} />
         <spotLight intensity={5} angle={0.1} penumbra={1} position={[10, 15, 10]} color='#fff' castShadow />

@@ -219,7 +219,7 @@ const Page: NextPage = () => {
 
     return (
         <>
-            <div className={styles.globe} style={canvasStyles}>
+            <div className={styles.playGlobe} style={canvasStyles}>
                 <Canvas shadows dpr={[1, 2]} camera={{ position: [+7, 3, 0], fov: 50 }}>
                     {/* <Canvas shadows dpr={[1, 2]}> */}
                     <CameraControls

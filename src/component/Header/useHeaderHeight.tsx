@@ -7,7 +7,7 @@ const headerHeightState = {
 };
 
 export const useHeaderHeight = () => {
-    const [height, setHeight] = useState(headerHeightState.height);
+    const [height, setHeight] = useState<number>(0);
 
     useEffect(() => {
         const updateHeight = (newHeight: number) => {

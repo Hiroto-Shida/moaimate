@@ -20,6 +20,7 @@ import { Controller, TypeControllerRefs } from '@src/component/KeyAndTouchEvent/
 import { useTouchContext } from '@src/component/KeyAndTouchEvent/TouchProvider'
 import useKeyboard from '@src/component/KeyAndTouchEvent/useKeyboard';
 import { useTouchEvent } from '@src/component/KeyAndTouchEvent/useTouchEvent';
+import { useHeaderHeight } from '@src/component/Header/useHeaderHeight';
 
 
 
@@ -28,10 +29,13 @@ const Page: NextPage = () => {
     const CameraControlRef = useRef<CameraControls | null>(null)
     const cameraPos = new THREE.Vector3() // カメラの座標
     const is_touch = useTouchContext() // タッチできるか否か
-
     const ControllerRef = useRef<TypeControllerRefs | null>(null) // コントローラーのref
-
     const touchMap = useTouchEvent() // タップ情報
+
+    const [headerHeight] = useHeaderHeight(); // ヘッダーの高さ取得
+    const canvasStyles = {
+        height: `calc(100dvh - ${headerHeight + 10}px)`, // ヘッダーの高さでCanvasサイズを調整
+    }
 
     // コントローラー初期値設定
     useEffect(() => {
@@ -45,6 +49,7 @@ const Page: NextPage = () => {
             ControllerRef.current.ChildRef.current.style.top = `${60 + touchMap.y}px`
             // console.log("controller setting 2", `${touchMap.controllerX - 100}px`, `${touchMap.controllerY - 100}px`)
         }
+        // console.log("header height = ", headerHeight)
     }, [touchMap.controllerY])
 
 
@@ -214,7 +219,7 @@ const Page: NextPage = () => {
 
     return (
         <>
-            <div className={styles.globe}>
+            <div className={styles.globe} style={canvasStyles}>
                 <Canvas shadows dpr={[1, 2]} camera={{ position: [+7, 3, 0], fov: 50 }}>
                     {/* <Canvas shadows dpr={[1, 2]}> */}
                     <CameraControls

@@ -33,6 +33,7 @@ import {
     useToast,
     useDisclosure,
     Center,
+    ChakraComponent,
 } from '@chakra-ui/react'
 import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons'
 import { useAuthContext } from '@src/feature/auth/provider/AuthProvider'
@@ -42,9 +43,10 @@ import { getAuth, signOut } from 'firebase/auth'
 // import Link from 'next/link'
 import { Navigate } from '@src/component/Navigate/Navigate'
 import { useRouter } from '@src/hooks/useRouter/useRouter'
-import { FormEvent, useState } from 'react'
+import { FormEvent, createContext, useEffect, useRef, useState } from 'react'
 import { getDatabase, onChildAdded, onValue, push, set, ref } from '@firebase/database'
 import React from 'react'
+import { useHeaderHeight } from './useHeaderHeight'
 
 
 export const Header = () => {
@@ -56,8 +58,20 @@ export const Header = () => {
     const { push } = useRouter()
     const { isOpen, onOpen, onClose } = useDisclosure()
     const btnRef = React.useRef<HTMLButtonElement>(null)
-    const [selectedItem, setSelectedItem] = useState<string>('')
+    const [selectedItem, setSelectedItem] = useState<string>('') // 選択したメニューバーなどのボタン情報
 
+    // header 高さ取得
+    const headerRef = useRef<HTMLDivElement>(null);
+    const [, setHeaderHeight] = useHeaderHeight()
+    useEffect(() => {
+        if (headerRef.current) {
+            const headerHeight = headerRef.current.offsetHeight;
+            setHeaderHeight(headerHeight)
+            // console.log('Header height:', headerHeight);
+        }
+    }, [setHeaderHeight]);
+
+    // メニューバーを開いたときの設定
     const onOpenDialog = (name: string) => {
         setSelectedItem(name)
     }
@@ -127,7 +141,7 @@ export const Header = () => {
 
     return (
         <>
-            <chakra.header py={4}>
+            <chakra.header py={4} ref={headerRef}>
                 <Container maxW={'container.lg'}>
                     <Flex>
                         <Navigate href={(path) => path.$url()}>

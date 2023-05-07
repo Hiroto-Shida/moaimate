@@ -1,6 +1,7 @@
-// タッチできるかどうかの判定(PC or モバイル)
+// タップ情報の設定
 import React, { useRef } from 'react';
 import { createContext, useState, useContext, useEffect, SetStateAction } from 'react';
+import { disablePullToRefresh } from './disablePullToRefresh';
 
 export type TypeTouchState = {
     is_tapController: Boolean // コントローラーをタッチしたか否か
@@ -32,6 +33,10 @@ export function useTouchEvent() {
         touchMap.current.controllerX = 200
         touchMap.current.controllerY = window.innerHeight - 200
 
+        const cleanup = disablePullToRefresh() // スマホの余計なスクロールを無効化
+        return () => {
+            cleanup()
+        }
         // }
     }, [])
 

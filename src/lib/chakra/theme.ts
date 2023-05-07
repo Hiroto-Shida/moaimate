@@ -14,7 +14,7 @@ export const theme = extendTheme({
                 '&': {
                     height: '100svh',
                 },
-                overscrollBehavior: 'none',
+                overscrollBehavior: 'none', // 下スクロールによるpull to refreshなどを無効化(スマホchromeのみ？)
             },
             '#__next': {
                 display: 'flex',

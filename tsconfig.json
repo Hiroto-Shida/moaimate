@@ -6,8 +6,8 @@
       "dom.iterable",
       "esnext"
     ],
-    // "target": "es2022",
-    // "downlevelIteration": true,
+    "target": "es2022",
+    "downlevelIteration": true,
     "strictNullChecks": true,
     "allowJs": true,
     "skipLibCheck": true,

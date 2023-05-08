@@ -62,12 +62,13 @@ export const Header = () => {
 
     // ヘッダー高さ，ウィンドウサイズ取得・設定
     const headerRef = useRef<HTMLDivElement>(null);
-    const [, , setPageInfo] = usePageSize()
+    const [, , , setPageInfo] = usePageSize()
     useEffect(() => {
         if (headerRef.current) {
             const headerHeight = headerRef.current.offsetHeight;
             const innerHeight = window.innerHeight;
-            setPageInfo(headerHeight, innerHeight)
+            const innerWidth = window.innerWidth;
+            setPageInfo(headerHeight, innerHeight, innerWidth)
             // console.log('Header height:', headerHeight);
         }
     }, [setPageInfo]);

@@ -14,6 +14,7 @@ import * as THREE from 'three'
 import { Canvas, Props, useLoader } from '@react-three/fiber';
 import { Environment, OrbitControls } from '@react-three/drei';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { usePageSize } from '@src/component/PageSizing/usePageSize';
 
 // --- 2Dモアイ回転 ---
 // const text = 'モアイ像とは南太平洋に位置するイースター島（チリ領）にある巨石像のことを指します'
@@ -55,6 +56,12 @@ const Page: NextPage = () => {
   //     </div>
   //   </div>
   // )
+
+  // ヘッダーの高さ，ページサイズ取得
+  const [headerHeight, innerHeight,] = usePageSize();
+  const canvasStyles = {
+    height: `${innerHeight - headerHeight - 10}px`, // ヘッダーの高さ，ページサイズでCanvasサイズを調整
+  }
 
   const Model = () => {
     const colors = [{
@@ -108,7 +115,7 @@ const Page: NextPage = () => {
   };
 
   return (
-    <div className={styles.topGlobe}>
+    <div className={styles.topGlobe} style={canvasStyles}>
       <Canvas shadows dpr={[1, 2]} camera={{ position: [0, 0, 7], fov: 50 }}>
         <ambientLight intensity={0.7} />
         <spotLight intensity={5} angle={0.1} penumbra={1} position={[10, 15, 10]} color='#fff' castShadow />

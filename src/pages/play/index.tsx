@@ -23,7 +23,6 @@ import { useTouchEvent } from '@src/component/KeyAndTouchEvent/useTouchEvent';
 import { usePageSize } from '@src/component/PageSizing/usePageSize';
 
 
-
 const Page: NextPage = () => {
 
     const CameraControlRef = useRef<CameraControls | null>(null)
@@ -31,27 +30,40 @@ const Page: NextPage = () => {
     const is_touch = useTouchContext() // タッチできるか否か
     const ControllerRef = useRef<TypeControllerRefs | null>(null) // コントローラーのref
     const touchMap = useTouchEvent() // タップ情報
+    const controllerSize = useRef<{ parent: number; child: number }>({ parent: 0, child: 0 })
 
     // ヘッダーの高さ，ページサイズ取得
-    const [headerHeight, innerHeight,] = usePageSize();
+    const [headerHeight, innerHeight, innerWidth] = usePageSize();
     const canvasStyles = {
         height: `${innerHeight - headerHeight - 10}px`, // ヘッダーの高さ，ページサイズでCanvasサイズを調整
     }
 
     // コントローラー初期値設定
     useEffect(() => {
+        const edgeSize = 30
+        // コントローラーサイズを決定
+        controllerSize.current.parent = (innerHeight >= innerWidth) ? (innerWidth / 3) : (innerHeight / 3)
+        controllerSize.current.child = controllerSize.current.parent / 2
+        // コントローラーの位置を決定
+        touchMap.controllerX = edgeSize + controllerSize.current.parent / 2
+        touchMap.controllerY = innerHeight - edgeSize - controllerSize.current.parent / 2
+
+        // コントローラーの外枠の方(parent)の設定
         if (ControllerRef.current && ControllerRef.current.ParentRef.current) {
-            ControllerRef.current.ParentRef.current.style.left = `${touchMap.controllerX - 100}px`
-            ControllerRef.current.ParentRef.current.style.top = `${touchMap.controllerY - 100}px`
-            // console.log("controller setting 2", `${touchMap.controllerX - 100}px`, `${touchMap.controllerY - 100}px`)
+            ControllerRef.current.ParentRef.current.style.width = `${controllerSize.current.parent}px`
+            ControllerRef.current.ParentRef.current.style.height = `${controllerSize.current.parent}px`
+            ControllerRef.current.ParentRef.current.style.left = `${touchMap.controllerX - controllerSize.current.parent / 2}px`
+            ControllerRef.current.ParentRef.current.style.top = `${touchMap.controllerY - controllerSize.current.parent / 2}px`
         }
+        // コントローラーの内側(child, 操作して動く方)の設定
         if (ControllerRef.current && ControllerRef.current.ChildRef.current) {
-            ControllerRef.current.ChildRef.current.style.left = `${60 + touchMap.x}px`
-            ControllerRef.current.ChildRef.current.style.top = `${60 + touchMap.y}px`
-            // console.log("controller setting 2", `${touchMap.controllerX - 100}px`, `${touchMap.controllerY - 100}px`)
+            ControllerRef.current.ChildRef.current.style.width = `${controllerSize.current.child}px`
+            ControllerRef.current.ChildRef.current.style.height = `${controllerSize.current.child}px`
+            ControllerRef.current.ChildRef.current.style.left = `${controllerSize.current.child / 2}px`
+            ControllerRef.current.ChildRef.current.style.top = `${controllerSize.current.child / 2}px`
         }
         // console.log("header height = ", headerHeight)
-    }, [touchMap.controllerY])
+    }, [canvasStyles.height]) // innerHeight, innerWidthが決定されたあとに実行したい
 
 
     // フィールド(地面)
@@ -148,11 +160,11 @@ const Page: NextPage = () => {
                     // コントローラーの円からはみ出ないような設定
                     const tmpR = Math.sqrt(touchMap.x ** 2 + touchMap.y ** 2)
                     let tmpMag: number = 1
-                    if (tmpR > 100) {
-                        tmpMag = tmpR / 100
+                    if (tmpR > controllerSize.current.parent / 2) {
+                        tmpMag = tmpR / (controllerSize.current.parent / 2)
                     }
-                    ControllerRef.current.ChildRef.current.style.left = `${60 + (touchMap.x) / tmpMag}px`
-                    ControllerRef.current.ChildRef.current.style.top = `${60 + (touchMap.y) / tmpMag}px`
+                    ControllerRef.current.ChildRef.current.style.left = `${controllerSize.current.child / 2 + (touchMap.x) / tmpMag}px`
+                    ControllerRef.current.ChildRef.current.style.top = `${controllerSize.current.child / 2 + (touchMap.y) / tmpMag}px`
                 }
 
                 // カメラ準備設定
@@ -166,8 +178,8 @@ const Page: NextPage = () => {
             } else {
                 // コントローラーの位置設定(初期位置に設定)
                 if (ControllerRef.current && ControllerRef.current.ChildRef.current) {
-                    ControllerRef.current.ChildRef.current.style.left = `${60}px`
-                    ControllerRef.current.ChildRef.current.style.top = `${60}px`
+                    ControllerRef.current.ChildRef.current.style.left = `${controllerSize.current.child / 2}px`
+                    ControllerRef.current.ChildRef.current.style.top = `${controllerSize.current.child / 2}px`
                 }
             }
         }

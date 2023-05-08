@@ -32,8 +32,8 @@ export function useTouchEvent() {
         // if (typeof document !== 'undefined') {
 
         // コントローラー初期値設定
-        touchMap.current.controllerX = 200
-        touchMap.current.controllerY = window.innerHeight - 200
+        // touchMap.current.controllerX = 200
+        // touchMap.current.controllerY = window.innerHeight - 200
 
         const cleanup = disablePullToRefresh() // スマホの余計なスクロールを無効化
         return () => {

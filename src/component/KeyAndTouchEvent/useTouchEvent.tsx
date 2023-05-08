@@ -10,6 +10,7 @@ export type TypeTouchState = {
     angle: number // コントローラーの操作角度
     controllerX: number; // コントローラー中心x座標
     controllerY: number; // コントローラー中心y座標
+    controllerTouchId: number
 }
 const initialTouchState: TypeTouchState = {
     is_tapController: false,
@@ -18,6 +19,7 @@ const initialTouchState: TypeTouchState = {
     angle: 0,
     controllerX: 0,
     controllerY: 0,
+    controllerTouchId: -1,
 }
 
 
@@ -47,26 +49,57 @@ export function useTouchEvent() {
             const targetElement = e.target as HTMLElement
             if ((targetElement.id == 'controller_parent') || (targetElement.id == 'controller_child')) {
                 // console.log("tap target!!")
-                touchMap.current.is_tapController = true
-                touchMap.current.x = e.touches[0].clientX - touchMap.current.controllerX,
-                    touchMap.current.y = e.touches[0].clientY - touchMap.current.controllerY,
+                // console.log("start e = ", e.touches.length)
+                if (touchMap.current.controllerTouchId == -1) {
+                    // const nowTouchId = e.touches[e.touches.length - 1].identifier
+                    const nowTouchId = e.touches[0].identifier
+                    touchMap.current.controllerTouchId = nowTouchId
+
+                    touchMap.current.is_tapController = true
+                    touchMap.current.x = e.touches[0].clientX - touchMap.current.controllerX
+                    touchMap.current.y = e.touches[0].clientY - touchMap.current.controllerY
                     touchMap.current.angle = Math.atan2(e.touches[0].clientY - touchMap.current.controllerY, e.touches[0].clientX - touchMap.current.controllerX)
+                }
             }
         }
 
         // スクリーンを触って移動中のイベント処理
         const touchMoveScreen = (e: TouchEvent) => {
-            touchMap.current.x = e.touches[0].clientX - touchMap.current.controllerX,
-                touchMap.current.y = e.touches[0].clientY - touchMap.current.controllerY,
+            let tmpFlag = false
+            for (const touch of e.changedTouches) {
+                if (touch.identifier == touchMap.current.controllerTouchId) {
+                    tmpFlag = true
+                    break
+                }
+            }
+            if (tmpFlag) {
+                touchMap.current.x = e.touches[0].clientX - touchMap.current.controllerX
+                touchMap.current.y = e.touches[0].clientY - touchMap.current.controllerY
                 touchMap.current.angle = Math.atan2(e.touches[0].clientY - touchMap.current.controllerY, e.touches[0].clientX - touchMap.current.controllerX)
+            }
             // console.log('move', touchInfo.x, touchInfo.y);
+            // console.log("move e = ", e.touches.length)
         }
 
         // スクリーンから離したときのイベント処理
         const touchEndScreen = (e: TouchEvent) => {
-            touchMap.current.is_tapController = false
-            touchMap.current.x = 0
-            touchMap.current.y = 0
+            if (touchMap.current.controllerTouchId !== -1) {
+
+                let tmpFlag = false
+                for (const touch of e.changedTouches) {
+                    if (touch.identifier == touchMap.current.controllerTouchId) {
+                        tmpFlag = true
+                        break
+                    }
+                }
+                if (tmpFlag) {
+                    touchMap.current.controllerTouchId = -1
+                    touchMap.current.is_tapController = false
+                    touchMap.current.x = 0
+                    touchMap.current.y = 0
+                }
+            }
+            // console.log('end e = ', e.touches.length)
             // console.log('end', touchInfo.x, touchInfo.y);
         }
         document.addEventListener('touchmove', touchMoveScreen)

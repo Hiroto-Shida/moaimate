@@ -46,7 +46,7 @@ import { useRouter } from '@src/hooks/useRouter/useRouter'
 import { FormEvent, createContext, useEffect, useRef, useState } from 'react'
 import { getDatabase, onChildAdded, onValue, push, set, ref } from '@firebase/database'
 import React from 'react'
-import { useHeaderHeight } from './useHeaderHeight'
+import { usePageSize } from '../PageSizing/usePageSize'
 
 
 export const Header = () => {
@@ -60,16 +60,17 @@ export const Header = () => {
     const btnRef = React.useRef<HTMLButtonElement>(null)
     const [selectedItem, setSelectedItem] = useState<string>('') // 選択したメニューバーなどのボタン情報
 
-    // header 高さ取得
+    // ヘッダー高さ，ウィンドウサイズ取得・設定
     const headerRef = useRef<HTMLDivElement>(null);
-    const [, setHeaderHeight] = useHeaderHeight()
+    const [, , setPageInfo] = usePageSize()
     useEffect(() => {
         if (headerRef.current) {
             const headerHeight = headerRef.current.offsetHeight;
-            setHeaderHeight(headerHeight)
+            const innerHeight = window.innerHeight;
+            setPageInfo(headerHeight, innerHeight)
             // console.log('Header height:', headerHeight);
         }
-    }, [setHeaderHeight]);
+    }, [setPageInfo]);
 
     // メニューバーを開いたときの設定
     const onOpenDialog = (name: string) => {

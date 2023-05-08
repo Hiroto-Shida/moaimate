@@ -20,7 +20,7 @@ import { Controller, TypeControllerRefs } from '@src/component/KeyAndTouchEvent/
 import { useTouchContext } from '@src/component/KeyAndTouchEvent/TouchProvider'
 import useKeyboard from '@src/component/KeyAndTouchEvent/useKeyboard';
 import { useTouchEvent } from '@src/component/KeyAndTouchEvent/useTouchEvent';
-import { useHeaderHeight } from '@src/component/Header/useHeaderHeight';
+import { usePageSize } from '@src/component/PageSizing/usePageSize';
 
 
 
@@ -32,9 +32,10 @@ const Page: NextPage = () => {
     const ControllerRef = useRef<TypeControllerRefs | null>(null) // コントローラーのref
     const touchMap = useTouchEvent() // タップ情報
 
-    const [headerHeight] = useHeaderHeight(); // ヘッダーの高さ取得
+    // ヘッダーの高さ，ページサイズ取得
+    const [headerHeight, innerHeight,] = usePageSize();
     const canvasStyles = {
-        height: `calc(100dvh - ${headerHeight + 10}px)`, // ヘッダーの高さでCanvasサイズを調整
+        height: `${innerHeight - headerHeight - 10}px`, // ヘッダーの高さ，ページサイズでCanvasサイズを調整
     }
 
     // コントローラー初期値設定
@@ -76,6 +77,10 @@ const Page: NextPage = () => {
                 <mesh position={[10, 0.1, 10]}>
                     <boxGeometry args={[2, 2, 2]} />
                     <meshStandardMaterial color="#f0f" />
+                </mesh>
+                <mesh position={[9.5, 0.1, 0]}>
+                    <boxGeometry args={[1, 1, 1]} />
+                    <meshStandardMaterial color="#555" />
                 </mesh>
             </>
         )

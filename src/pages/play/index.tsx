@@ -1,19 +1,11 @@
 import type { NextPage } from 'next'
-import {
-    Heading,
-    Box,
-    Image,
-    Text,
-    Center,
-    Button,
-} from '@chakra-ui/react'
 import styles from '@src/styles/Home.module.css'
 import React, { CSSProperties, Suspense, useRef, useState } from 'react';
 
 import { useEffect, createContext, MouseEvent } from 'react'
 import * as THREE from 'three'
 import { Canvas, Props, useFrame, useLoader } from '@react-three/fiber';
-import { Environment, OrbitControls } from '@react-three/drei';
+import { Environment, OrbitControls, Text } from '@react-three/drei';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { CameraControls } from '@react-three/drei';
 import { Controller, TypeControllerRefs } from '@src/component/KeyAndTouchEvent/Controller';
@@ -21,16 +13,20 @@ import { useTouchContext } from '@src/component/KeyAndTouchEvent/TouchProvider'
 import useKeyboard from '@src/component/KeyAndTouchEvent/useKeyboard';
 import { useTouchEvent } from '@src/component/KeyAndTouchEvent/useTouchEvent';
 import { usePageSize } from '@src/component/PageSizing/usePageSize';
+import { Field } from '@src/component/ThreeObject/Field';
+import { TextAbovePlayer } from '@src/component/ThreeObject/TextAbovePlayer';
+import { useAuthContext } from '@src/feature/auth/provider/AuthProvider';
 
 
 const Page: NextPage = () => {
 
-    const CameraControlRef = useRef<CameraControls | null>(null)
+    // const user = useAuthContext() // ユーザ情報の取得
+    const CameraControlRef = useRef<CameraControls | null>(null) // カメラのref．回転や方向の参照や調整に使用
     const cameraPos = new THREE.Vector3() // カメラの座標
     const is_touch = useTouchContext() // タッチできるか否か
     const ControllerRef = useRef<TypeControllerRefs | null>(null) // コントローラーのref
     const touchMap = useTouchEvent() // タップ情報
-    const controllerSize = useRef<{ parent: number; child: number }>({ parent: 0, child: 0 })
+    const controllerSize = useRef<{ parent: number; child: number }>({ parent: 0, child: 0 }) // コントローラのサイズref
 
     // ヘッダーの高さ，ページサイズ取得
     const [headerHeight, innerHeight, innerWidth] = usePageSize();
@@ -66,44 +62,12 @@ const Page: NextPage = () => {
     }, [canvasStyles.height]) // innerHeight, innerWidthが決定されたあとに実行したい
 
 
-    // フィールド(地面)
-    const Field = () => {
-        return (
-            <>
-                <mesh position={[0, -0.2, 0]}>
-                    <boxGeometry args={[20, 0.2, 20]} />
-                    <meshStandardMaterial color="#22a7f2" />
-                </mesh>
-                <mesh position={[-10, 0.1, -10]}>
-                    <boxGeometry args={[2, 2, 2]} />
-                    <meshStandardMaterial color="#f00" />
-                </mesh>
-                <mesh position={[-10, 0.1, 10]}>
-                    <boxGeometry args={[2, 2, 2]} />
-                    <meshStandardMaterial color="#0f0" />
-                </mesh>
-                <mesh position={[10, 0.1, -10]}>
-                    <boxGeometry args={[2, 2, 2]} />
-                    <meshStandardMaterial color="#00f" />
-                </mesh>
-                <mesh position={[10, 0.1, 10]}>
-                    <boxGeometry args={[2, 2, 2]} />
-                    <meshStandardMaterial color="#f0f" />
-                </mesh>
-                <mesh position={[9.5, 0.1, 0]}>
-                    <boxGeometry args={[1, 1, 1]} />
-                    <meshStandardMaterial color="#555" />
-                </mesh>
-            </>
-        )
-    }
-
     // モアイ(キャラ)
     const keyMap = useKeyboard() // 押しているキーボード保持
     const Model = () => {
 
-        // キーボード操作
-        const MoaiRef = useRef<THREE.Mesh>(null!)
+        const MoaiRef = useRef<THREE.Mesh>(null!) // モアイref情報
+        const TextRef = useRef<THREE.Mesh>(null!) // テキストref情報
         const tmpPos = { x: 0, z: 0 }
 
 
@@ -115,6 +79,9 @@ const Page: NextPage = () => {
             // モアイのx,z座標を設定
             MoaiRef.current.position.z -= Math.cos((cameraAzimuthAngle ?? 0) + directionAngle) * 3 * delta
             MoaiRef.current.position.x -= Math.sin((cameraAzimuthAngle ?? 0) + directionAngle) * 3 * delta
+            // テキストのx,z座標を設定
+            TextRef.current.position.z -= Math.cos((cameraAzimuthAngle ?? 0) + directionAngle) * 3 * delta
+            TextRef.current.position.x -= Math.sin((cameraAzimuthAngle ?? 0) + directionAngle) * 3 * delta
 
             // カメラ準備設定
             CameraControlRef.current?.getPosition(cameraPos) // カメラの座標を取得
@@ -138,21 +105,34 @@ const Page: NextPage = () => {
             tmpPos.z = MoaiRef.current.position.z // 移動後のzを保持
         }
 
+        const updateTextAngle = () => {
+            const cameraAzimuthAngle: number | undefined = CameraControlRef.current?.azimuthAngle // カメラの角度を取得
+            if (TextRef.current) {
+                TextRef.current.rotation.y = (cameraAzimuthAngle ?? 0)
+                // console.log(TextRef.current)
+            }
+        }
+
         // デバッグ用
         // const checkPos = (delta: number) => {
-        //     CameraControlRef.current?.getPosition(cameraPos) // カメラの座標を取得
-        //     console.log(cameraPos.y)
+        //     // CameraControlRef.current?.getPosition(cameraPos) // カメラの座標を取得
+        //     // console.log(cameraPos.y)
+        //     console.log('cameraRef = ', CameraControlRef.current?.active)
         // }
 
         // joystickコントローラー(スマホ)操作時の処理
         const updateController = (delta: number) => {
-            if (touchMap.is_tapController) {
+            if (touchMap.is_tapController) { // コントローラを触っている時
                 const cameraAzimuthAngle: number | undefined = CameraControlRef.current?.azimuthAngle // カメラの角度を取得
                 const tmpAngle = -touchMap.angle + (cameraAzimuthAngle ?? 0)
                 // console.log("tmpAngle", tmpAngle)
-                MoaiRef.current.rotation.y = tmpAngle
+                MoaiRef.current.rotation.y = tmpAngle // モアイの角度設定
                 MoaiRef.current.position.z += Math.cos(tmpAngle + Math.PI / 2) * 3 * delta // モアイのz座標を設定
                 MoaiRef.current.position.x += Math.sin(tmpAngle + Math.PI / 2) * 3 * delta // モアイのx座標を設定
+                // テキストのx,z座標を設定
+                TextRef.current.rotation.y = tmpAngle // テキストの角度設定
+                TextRef.current.position.z += Math.cos(tmpAngle + Math.PI / 2) * 3 * delta // テキストのz座標を設定
+                TextRef.current.position.x += Math.sin(tmpAngle + Math.PI / 2) * 3 * delta // テキストのx座標を設定
                 // console.log('moai X,Z = ', MoaiRef.current.position.x, MoaiRef.current.position.z)
 
                 // コントローラーの位置設定
@@ -188,6 +168,8 @@ const Page: NextPage = () => {
         useFrame((_, delta: number) => {
             is_touch && (updateController(delta)); // タップ操作が可能な場合に処理
             // keyMap['Space'] && (checkPos(delta)); // デバッグ用
+            // (checkPos(delta)); // デバッグ用
+            (CameraControlRef.current?.active) && (updateTextAngle())
             keyMap['ArrowUp'] && (updateMoaiPos(0, delta));
             keyMap['ArrowDown'] && (updateMoaiPos(Math.PI, delta));
             keyMap['ArrowRight'] && (updateMoaiPos(-Math.PI / 2, delta));
@@ -229,8 +211,14 @@ const Page: NextPage = () => {
                 }
             })
         }
+
         return (
-            <primitive ref={MoaiRef} object={models[0]} scale={0.1} position={new THREE.Vector3(0, 0.7, 0)} />
+            <>
+                <mesh position={[0, 1.5, 0]} ref={TextRef}>
+                    <TextAbovePlayer />
+                </mesh>
+                <primitive ref={MoaiRef} object={models[0]} scale={0.1} position={new THREE.Vector3(0, 0.7, 0)} />
+            </>
         );
     };
 

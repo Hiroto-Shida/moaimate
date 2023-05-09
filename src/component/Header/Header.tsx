@@ -83,6 +83,7 @@ export const Header = () => {
     }
 
 
+    // アカウント(名前)設定
     const handleAccountSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         console.log('username = ', userName)

@@ -5,7 +5,7 @@ import { getDatabase, push, ref } from '@firebase/database'
 import { FirebaseError } from '@firebase/util'
 
 export const InputForm = () => {
-    // console.log("-- chat page inputForm rendering --")
+    console.log("-- chat page inputForm rendering --")
 
     const [message, setMessage] = useState<string>('')
     const user = useAuthContext()

@@ -89,7 +89,7 @@ export const Header = () => {
         console.log('username = ', userName)
         if (!userName.match(/\S/g)) {
             toast({
-                title: '空白以外の文字を入力してください',
+                title: 'Please enter characters other than spaces',
                 status: 'error',
                 position: 'top',
             })
@@ -110,7 +110,7 @@ export const Header = () => {
                 })
 
                 toast({
-                    title: 'ユーザ名が変更されました',
+                    title: 'Username has been changed',
                     status: 'success',
                     position: 'top',
                 })
@@ -128,7 +128,7 @@ export const Header = () => {
             const auth = getAuth()
             await signOut(auth)
             toast({
-                title: 'ログアウトしました。',
+                title: 'Logged out',
                 status: 'success',
                 position: 'top',
             })
@@ -209,11 +209,6 @@ export const Header = () => {
                                             </Flex>
                                         </DrawerBody>
 
-                                        <DrawerFooter>
-                                            <Button variant='outline' mr={3} onClick={onClose}>
-                                                Close
-                                            </Button>
-                                        </DrawerFooter>
                                     </DrawerContent>
                                 </Drawer>
 

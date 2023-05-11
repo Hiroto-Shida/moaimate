@@ -14,7 +14,7 @@ export const AuthGuard = ({ children }: Props) => {
     // console.log("emailVerified = ", user?.emailVerified)
 
     if (typeof user?.user.userinfo === 'undefined') {
-        return <Box>読み込み中...</Box>
+        return <Box>Loading...</Box>
     }
 
     // メール認証を終えてない場合

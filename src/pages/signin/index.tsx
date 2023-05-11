@@ -9,6 +9,7 @@ import {
     Grid,
     Heading,
     Input,
+    Link,
     Spacer,
     useToast,
 } from '@chakra-ui/react'
@@ -16,6 +17,7 @@ import { type FormEvent, useState } from 'react'
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth'
 import { FirebaseError } from '@firebase/util'
 import { useRouter } from '@src/hooks/useRouter/useRouter'
+import { Navigate } from '@src/component/Navigate/Navigate'
 
 export const Page = () => {
 
@@ -34,14 +36,14 @@ export const Page = () => {
             setEmail('')
             setPassword('')
             toast({
-                title: 'ログインしました。',
+                title: 'Logged in',
                 status: 'success',
                 position: 'top',
             })
-            push((path) => path.chat.$url()) //ログイン後のページ遷移
+            push((path) => path.$url()) //ログイン後のページ遷移
         } catch (e) {
             toast({
-                title: 'エラーが発生しました。',
+                title: 'An error occurred',
                 status: 'error',
                 position: 'top',
             })
@@ -56,13 +58,13 @@ export const Page = () => {
 
     return (
         <Container py={14}>
-            <Heading>サインイン</Heading>
+            <Heading>Sign In</Heading>
             <chakra.form onSubmit={handleSubmit}>
                 <Spacer height={8} aria-hidden />
                 <Grid gap={4}>
                     <Box display={'contents'}>
                         <FormControl>
-                            <FormLabel>メールアドレス</FormLabel>
+                            <FormLabel>E-Mail</FormLabel>
                             <Input
                                 type={'email'}
                                 name={'email'}
@@ -73,7 +75,7 @@ export const Page = () => {
                             />
                         </FormControl>
                         <FormControl>
-                            <FormLabel>パスワード</FormLabel>
+                            <FormLabel>Pass word</FormLabel>
                             <Input
                                 type={'password'}
                                 name={'password'}
@@ -88,10 +90,16 @@ export const Page = () => {
                 <Spacer height={4} aria-hidden />
                 <Center>
                     <Button type={'submit'} isLoading={isLoading}>
-                        ログイン
+                        Login
                     </Button>
                 </Center>
             </chakra.form>
+            <Spacer height={10} aria-hidden />
+            <Center>
+                <Navigate href={(path) => path.signup.$url()}>
+                    <Link lineHeight={1}>Sign up</Link>
+                </Navigate>
+            </Center>
         </Container>
     )
 }

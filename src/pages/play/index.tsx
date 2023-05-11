@@ -11,13 +11,11 @@ import { useTouchContext } from '@src/component/KeyAndTouchEvent/TouchProvider'
 import { useTouchEvent } from '@src/component/KeyAndTouchEvent/useTouchEvent';
 import { usePageSize } from '@src/component/PageSizing/usePageSize';
 import { Field } from '@src/component/ThreeObject/Field';
-import { useAuthContext } from '@src/feature/auth/provider/AuthProvider';
 import { Player } from '@src/component/ThreeObject/Player';
 
 
 const Page: NextPage = () => {
     console.log("-- play page rendering --")
-    // const user = useAuthContext() // ユーザ情報の取得
     const CameraControlRef = useRef<CameraControls | null>(null) // カメラのref．回転や方向の参照や調整に使用
     // const cameraPos = new THREE.Vector3() // カメラの座標
     const is_touch = useTouchContext() // タッチできるか否か

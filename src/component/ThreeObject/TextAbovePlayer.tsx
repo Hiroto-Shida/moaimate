@@ -1,10 +1,11 @@
 // 2Dテキスト
 import { Text } from '@react-three/drei';
+import { useAuthContext } from '@src/feature/auth/provider/AuthProvider';
 
 export const TextAbovePlayer = () => {
     // const textRef = useRotate([0, 0.1, 0])
-    const text = 'hogehoge'
     const font_data = '/fonts/MPLUS1p-Bold.woff'
+    const user = useAuthContext() // ユーザ情報の取得
 
     return (
         <Text
@@ -21,7 +22,7 @@ export const TextAbovePlayer = () => {
             outlineWidth={0.02}
             outlineColor="#ffffff"
         >
-            {text}
+            {user?.user.username}
         </Text>
     )
 }

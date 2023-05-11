@@ -87,7 +87,7 @@ export const Header = () => {
     const handleAccountSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         console.log('username = ', userName)
-        if (!userName.match(/\S/g)) {
+        if (!userName.match(/\S/g)) { // 空白の名前を登録しようとした時
             toast({
                 title: 'Please enter characters other than spaces',
                 status: 'error',
@@ -133,6 +133,7 @@ export const Header = () => {
                 position: 'top',
             })
             // push('/signin')
+            onCloseDialog()
             push((path) => path.signin.$url())
         } catch (e) {
             if (e instanceof FirebaseError) {
@@ -189,19 +190,19 @@ export const Header = () => {
                                         <DrawerBody>
                                             <Flex flexDirection={'column'} gap={5} fontSize={20} alignItems={'start'}>
                                                 <Navigate href={(path) => path.$url()}>
-                                                    <Link lineHeight={1}>Top</Link>
+                                                    <Link lineHeight={1} onClick={onCloseDialog}>Top</Link>
                                                 </Navigate>
                                                 <Navigate href={(path) => path.signin.$url()}>
-                                                    <Link lineHeight={1}>Sign In</Link>
+                                                    <Link lineHeight={1} onClick={onCloseDialog}>Sign In</Link>
                                                 </Navigate>
                                                 <Navigate href={(path) => path.signup.$url()}>
-                                                    <Link lineHeight={1}>Sign Up</Link>
+                                                    <Link lineHeight={1} onClick={onCloseDialog}>Sign Up</Link>
                                                 </Navigate>
                                                 <Navigate href={(path) => path.chat.$url()}>
-                                                    <Link lineHeight={1}>Chat</Link>
+                                                    <Link lineHeight={1} onClick={onCloseDialog}>Chat</Link>
                                                 </Navigate>
                                                 <Navigate href={(path) => path.play.$url()}>
-                                                    <Link lineHeight={1}>Play</Link>
+                                                    <Link lineHeight={1} onClick={onCloseDialog}>Play</Link>
                                                 </Navigate>
                                                 <Spacer aria-hidden />
                                                 <Button onClick={() => onOpenDialog('AccountSetting')}>Setting</Button>
@@ -220,7 +221,7 @@ export const Header = () => {
                                     <ModalOverlay />
                                     <ModalContent>
                                         <chakra.form onSubmit={handleAccountSubmit}>
-                                            <ModalHeader>Setting</ModalHeader>
+                                            <ModalHeader>Account Setting</ModalHeader>
                                             <ModalCloseButton />
                                             <ModalBody>
                                                 <FormControl>

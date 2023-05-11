@@ -113,6 +113,7 @@ export const AuthProvider = ({ children }: Props) => {
             }
             return
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user.userinfo])
 
     return <AuthContext.Provider value={{ user, setUser }}>{children}</AuthContext.Provider>

@@ -15,9 +15,8 @@ import { getDatabase, onChildAdded, onValue, push, set, ref } from '@firebase/da
 import { FirebaseError } from '@firebase/util'
 import { AuthGuard } from '@src/feature/auth/component/AuthGuard/AuthGuard'
 import { useAuthContext } from '@src/feature/auth/provider/AuthProvider'
+import { InputForm } from '@src/component/ChatComponent/InputForm'
 
-// const _message = '確認用メッセージです。'
-// const _messages = [...Array(10)].map((_, i) => _message.repeat(i + 1))
 
 type MessageProps = {
     userName: string
@@ -41,29 +40,8 @@ const Message = ({ userName, message }: MessageProps) => {
 }
 
 export const Page = () => {
+    console.log("-- chat page rendering --")
     const messagesElementRef = useRef<HTMLDivElement | null>(null)
-    const user = useAuthContext()
-    const [message, setMessage] = useState<string>('')
-
-    const handleSendMessage = async (e: FormEvent<HTMLFormElement>) => {
-        e.preventDefault() // リロード回避
-        try {
-            // databaseを参照して取得
-            const db = getDatabase()
-            const dbRef_chat = ref(db, 'chat')
-            // pushはデータを書き込む際にユニークキーを自動で生成
-            await push(dbRef_chat, {
-                userName: user?.user.username,
-                message: message,
-            })
-            setMessage('')
-        } catch (e) {
-            if (e instanceof FirebaseError) {
-                console.log(e)
-            }
-        }
-        // console.log(user)
-    }
 
     const [chats, setChats] = useState<{ userName: string, message: string }[]>([])
 
@@ -89,6 +67,7 @@ export const Page = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
+    // チャットに何か送信されたら，最新位置までスクロール
     useEffect(() => {
         messagesElementRef.current?.scrollTo({
             top: messagesElementRef.current.scrollHeight,
@@ -120,10 +99,7 @@ export const Page = () => {
                 </Flex>
                 <Spacer aria-hidden />
                 <Spacer height={2} aria-hidden flex={'none'} />
-                <chakra.form display={'flex'} gap={2} onSubmit={handleSendMessage}>
-                    <Input value={message} onChange={(e) => setMessage(e.target.value)} />
-                    <Button type={'submit'}>送信</Button>
-                </chakra.form>
+                <InputForm />
             </Container>
         </AuthGuard>
     )

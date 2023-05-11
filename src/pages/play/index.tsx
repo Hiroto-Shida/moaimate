@@ -19,7 +19,7 @@ import { useAuthContext } from '@src/feature/auth/provider/AuthProvider';
 
 
 const Page: NextPage = () => {
-
+    console.log("-- play page rendering --")
     // const user = useAuthContext() // ユーザ情報の取得
     const CameraControlRef = useRef<CameraControls | null>(null) // カメラのref．回転や方向の参照や調整に使用
     const cameraPos = new THREE.Vector3() // カメラの座標

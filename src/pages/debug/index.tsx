@@ -1,24 +1,28 @@
-import { Button, Input, chakra } from "@chakra-ui/react"
-import { ChangeEvent, FormEvent, useState } from "react"
+import { useEffect } from 'react'
+import { getDatabase, onChildAdded, ref } from '@firebase/database'
+import { FirebaseError } from '@firebase/util'
 
 export const Page = () => {
-    console.log("-- debug page rendering --")
 
-    const [message, setMessage] = useState<string>('')
-
-    const handleChangeMessage = (e: ChangeEvent<HTMLInputElement>) => {
-        setMessage(e.target.value)
-    }
-
-    const handleSendMessage = async (e: FormEvent<HTMLFormElement>) => {
-        setMessage('')
-    }
+    // firebaseからチャットの送受信の取得
+    useEffect(() => {
+        try {
+            const db = getDatabase()
+            const dbRef_chat = ref(db, 'chat')
+            return onChildAdded(dbRef_chat, (snapshot) => {
+                const message = String(snapshot.val()['message'] ?? '')
+                console.log(message)
+            })
+        } catch (e) {
+            if (e instanceof FirebaseError) {
+                console.error(e)
+            }
+            return
+        }
+    }, [])
 
     return (
-        <chakra.form display={'flex'} gap={2} onSubmit={handleSendMessage}>
-            <Input value={message} onChange={(e) => handleChangeMessage(e)} />
-            <Button type={'submit'}>送信</Button>
-        </chakra.form>
+        <div>test</div>
     )
 }
 

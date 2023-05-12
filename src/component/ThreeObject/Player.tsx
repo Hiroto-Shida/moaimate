@@ -5,10 +5,13 @@ import * as THREE from 'three'
 import { useTouchEvent } from '@src/component/KeyAndTouchEvent/useTouchEvent';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { TextAbovePlayer } from '@src/component/ThreeObject/TextAbovePlayer';
+import { getDatabase, onChildAdded, onValue, push, set, ref } from '@firebase/database'
+import { useAuthContext } from '@src/feature/auth/provider/AuthProvider';
+import { FirebaseError } from 'firebase/app';
 
 // 自分のキャラプレイヤー
-export const Player = ({ CameraControlRef, ControllerRef, controllerSize, is_touch }) => {
-    console.log("-- Player component rendering --")
+export const Player = ({ CameraControlRef, ControllerRef, controllerSize, is_touch, user }) => {
+    // console.log("-- Player component rendering --")
 
     const cameraPos = new THREE.Vector3() // カメラの座標
     const MoaiRef = useRef<THREE.Mesh>(null!) // モアイref情報
@@ -16,6 +19,25 @@ export const Player = ({ CameraControlRef, ControllerRef, controllerSize, is_tou
     const tmpPos = { x: 0, z: 0 }
     const touchMap = useTouchEvent() // タップ情報
     const keyMap = useKeyboard() // 押しているキーボード保持
+    // const user = useAuthContext() // ユーザ情報の取得
+
+    const sendPlayerData = async () => {
+        try {
+            // databaseを参照して取得
+            const db = getDatabase()
+            const dbRef_play = ref(db, `play/${user.userinfo?.uid}`)
+            await set(dbRef_play, {
+                // 'is_exist': true,
+                'x': MoaiRef.current.position.x,
+                'z': MoaiRef.current.position.z,
+                'angle': MoaiRef.current.rotation.y
+            })
+        } catch (e) {
+            if (e instanceof FirebaseError) {
+                console.log(e)
+            }
+        }
+    }
 
     // モアイの位置座標処理(キーボード in PC)
     const updateMoaiPos = (directionAngle: number, delta: number) => {
@@ -26,8 +48,8 @@ export const Player = ({ CameraControlRef, ControllerRef, controllerSize, is_tou
         MoaiRef.current.position.z -= Math.cos((cameraAzimuthAngle ?? 0) + directionAngle) * 3 * delta
         MoaiRef.current.position.x -= Math.sin((cameraAzimuthAngle ?? 0) + directionAngle) * 3 * delta
         // テキストのx,z座標を設定
-        TextRef.current.position.z -= Math.cos((cameraAzimuthAngle ?? 0) + directionAngle) * 3 * delta
-        TextRef.current.position.x -= Math.sin((cameraAzimuthAngle ?? 0) + directionAngle) * 3 * delta
+        TextRef.current.position.z = MoaiRef.current.position.z
+        TextRef.current.position.x = MoaiRef.current.position.x
 
         // カメラ準備設定
         CameraControlRef.current?.getPosition(cameraPos) // カメラの座標を取得
@@ -49,6 +71,7 @@ export const Player = ({ CameraControlRef, ControllerRef, controllerSize, is_tou
         MoaiRef.current.rotation.y = tmpAtan2 + Math.PI / 2 // モアイの角度を設定
         tmpPos.x = MoaiRef.current.position.x // 移動後のxを保持
         tmpPos.z = MoaiRef.current.position.z // 移動後のzを保持
+        sendPlayerData()
     }
 
     const updateTextAngle = () => {
@@ -77,8 +100,8 @@ export const Player = ({ CameraControlRef, ControllerRef, controllerSize, is_tou
             MoaiRef.current.position.x += Math.sin(tmpAngle + Math.PI / 2) * 3 * delta // モアイのx座標を設定
             // テキストのx,z座標を設定
             TextRef.current.rotation.y = tmpAngle // テキストの角度設定
-            TextRef.current.position.z += Math.cos(tmpAngle + Math.PI / 2) * 3 * delta // テキストのz座標を設定
-            TextRef.current.position.x += Math.sin(tmpAngle + Math.PI / 2) * 3 * delta // テキストのx座標を設定
+            TextRef.current.position.z = MoaiRef.current.position.z // テキストのz座標を設定
+            TextRef.current.position.x = MoaiRef.current.position.x // テキストのx座標を設定
             // console.log('moai X,Z = ', MoaiRef.current.position.x, MoaiRef.current.position.z)
 
             // コントローラーの位置設定
@@ -101,6 +124,7 @@ export const Player = ({ CameraControlRef, ControllerRef, controllerSize, is_tou
             // カメラの座標と見る方向の設定
             CameraControlRef.current?.setPosition(MoaiRef.current.position.x + tmpCameraX, cameraPos.y, MoaiRef.current.position.z + tmpCameraZ, true) // カメラの座標
             CameraControlRef.current?.setTarget(MoaiRef.current.position.x, MoaiRef.current.position.y, MoaiRef.current.position.z, true) // カメラの見る方向
+            sendPlayerData()
         } else {
             // コントローラーの位置設定(初期位置に設定)
             if (ControllerRef.current && ControllerRef.current.ChildRef.current) {
@@ -120,7 +144,7 @@ export const Player = ({ CameraControlRef, ControllerRef, controllerSize, is_tou
         keyMap['ArrowDown'] && (updateMoaiPos(Math.PI, delta));
         keyMap['ArrowRight'] && (updateMoaiPos(-Math.PI / 2, delta));
         keyMap['ArrowLeft'] && (updateMoaiPos(Math.PI / 2, delta));
-        (keyMap['ArrowUp'] || keyMap['ArrowDown'] || keyMap['ArrowRight'] || keyMap['ArrowLeft']) && updateMoaiAngle();
+        (keyMap['ArrowUp'] || keyMap['ArrowDown'] || keyMap['ArrowRight'] || keyMap['ArrowLeft']) && updateMoaiAngle(); // 斜め処理のため必要
     })
 
     // モアイ(キャラ生成)
@@ -161,7 +185,9 @@ export const Player = ({ CameraControlRef, ControllerRef, controllerSize, is_tou
     return (
         <>
             <mesh position={[0, 1.5, 0]} ref={TextRef}>
-                <TextAbovePlayer />
+                <TextAbovePlayer
+                    username={user.username}
+                />
             </mesh>
             <primitive ref={MoaiRef} object={models[0]} scale={0.1} position={new THREE.Vector3(0, 0.7, 0)} />
         </>

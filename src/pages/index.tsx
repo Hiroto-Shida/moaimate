@@ -35,7 +35,6 @@ import { usePageSize } from '@src/component/PageSizing/usePageSize';
 
 const Page: NextPage = () => {
 
-
   // --- 2Dモアイ回転 ---
   // return (
   //   <div className={styles.circle} style={sizeStyle}>

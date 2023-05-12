@@ -8,7 +8,7 @@ export const InputForm = () => {
     console.log("-- chat page inputForm rendering --")
 
     const [message, setMessage] = useState<string>('')
-    const user = useAuthContext()
+    const { user } = useAuthContext()
 
     const handleChangeMessage = (e: ChangeEvent<HTMLInputElement>) => {
         setMessage(e.target.value)
@@ -22,7 +22,7 @@ export const InputForm = () => {
             const dbRef_chat = ref(db, 'chat')
             // pushはデータを書き込む際にユニークキーを自動で生成
             await push(dbRef_chat, {
-                userName: user?.user.username,
+                userName: user.username,
                 message: message,
             })
             setMessage('')

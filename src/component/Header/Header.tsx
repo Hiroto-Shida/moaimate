@@ -50,8 +50,8 @@ import { usePageSize } from '../PageSizing/usePageSize'
 
 
 export const Header = () => {
-    const user = useAuthContext()
-    // console.log("abc = ", user?.user)
+    const { user, setUser } = useAuthContext()
+    // console.log("abc = ", user.user)
     // const { username } = useAuthContext()
     const [userName, setUserName] = useState<string>('')
     const toast = useToast()
@@ -98,11 +98,11 @@ export const Header = () => {
 
                 // databaseに保存
                 const db = getDatabase()
-                const dbRef_chat = ref(db, `user/${user?.user.userinfo?.uid}/name`)
+                const dbRef_chat = ref(db, `user/${user.userinfo?.uid}/name`)
                 await set(dbRef_chat, userName)
 
                 // stateに保存
-                user?.setUser(state => {
+                setUser(state => {
                     return {
                         ...state,
                         username: userName // ユーザ名だけ設定
@@ -158,12 +158,12 @@ export const Header = () => {
                             {/* </Link> */}
                         </Navigate>
                         <Spacer aria-hidden />
-                        {user?.user.userinfo?.emailVerified ? (
+                        {user.userinfo?.emailVerified ? (
                             <>
                                 <Menu>
                                     <Box h={10} mr={3} color='#fff' display='flex' justifyContent='center' alignItems='center'>
-                                        {/* <Text align='center' fontSize='md'>{user?.email}でログイン中</Text> */}
-                                        <Text align='center' fontSize='md' as='b'>{user.user.username}</Text>
+                                        {/* <Text align='center' fontSize='md'>{user.email}でログイン中</Text> */}
+                                        <Text align='center' fontSize='md' as='b'>{user.username}</Text>
                                     </Box>
                                     {/* <MenuButton>
                                         <Avatar flexShrink={0} width={10} height={10} />
@@ -229,7 +229,7 @@ export const Header = () => {
                                                     <Input
                                                         type={'email'}
                                                         name={'email'}
-                                                        value={String(user.user.userinfo.email)}
+                                                        value={String(user.userinfo.email)}
                                                         isReadOnly
                                                     />
                                                 </FormControl>

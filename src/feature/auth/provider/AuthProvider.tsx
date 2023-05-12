@@ -26,7 +26,7 @@ export type GlobalsetState = {
     setUser: React.Dispatch<React.SetStateAction<GlobalAuthState>>
 }
 
-const AuthContext = createContext<GlobalsetState | null>(null)
+const AuthContext = createContext<GlobalsetState>({ user: initialState, setUser: () => { } })
 
 type Props = { children: ReactNode }
 

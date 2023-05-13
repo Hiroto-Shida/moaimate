@@ -16,7 +16,7 @@ import { Canvas } from '@react-three/fiber';
 import { Environment, OrbitControls, Text } from '@react-three/drei';
 import { CameraControls } from '@react-three/drei';
 import { Controller, TypeControllerRefs } from '@src/component/KeyAndTouchEvent/Controller';
-import { getDatabase, onChildAdded, onValue, onDisconnect, push, set, ref } from '@firebase/database'
+import { getDatabase, onChildAdded, onValue, onDisconnect, push, set, ref, remove } from '@firebase/database'
 import { useTouchContext } from '@src/component/KeyAndTouchEvent/TouchProvider'
 import { useTouchEvent } from '@src/component/KeyAndTouchEvent/useTouchEvent';
 import { usePageSize } from '@src/component/PageSizing/usePageSize';
@@ -25,13 +25,15 @@ import { Player } from '@src/component/ThreeObject/Player';
 import { AuthGuard } from '@src/feature/auth/component/AuthGuard/AuthGuard';
 import { useAuthContext } from '@src/feature/auth/provider/AuthProvider';
 import { FirebaseError } from 'firebase/app';
-import { useRouter } from '@src/hooks/useRouter/useRouter'
+import { usePathRouter } from '@src/hooks/usePathRouter/usePathRouter'
 import { Navigate } from '@src/component/Navigate/Navigate';
+import { useRouter } from 'next/router';
 
 const Page: NextPage = () => {
     // console.log("-- play page rendering --")
     const [isJoin, setIsJoin] = useState<Boolean>(false) // 最初のJoinモーダル用(beforeunloadイベントの発火用にも必要)
-    const { push } = useRouter()
+    const { push } = usePathRouter()
+    const nextRouter = useRouter()
 
     const { user } = useAuthContext() // ユーザ情報の取得
     const CameraControlRef = useRef<CameraControls | null>(null) // カメラのref．回転や方向の参照や調整に使用
@@ -39,6 +41,8 @@ const Page: NextPage = () => {
     const ControllerRef = useRef<TypeControllerRefs | null>(null) // コントローラーのref
     const touchMap = useTouchEvent() // タップ情報
     const controllerSize = useRef<{ parent: number; child: number }>({ parent: 0, child: 0 }) // コントローラのサイズref
+
+    // const usersInfoRef = useRef({}) // playページの参加プレイヤーの情報
 
     // ヘッダーの高さ，ページサイズ取得
     const [headerHeight, innerHeight, innerWidth] = usePageSize();
@@ -51,73 +55,76 @@ const Page: NextPage = () => {
         push((path) => path.$url())
     }
 
-    // ユーザの切断時
-    // const disconnectPlayer = async () => {
+
+    // フィールドに新しいPlayerが参加した時，参加キャラ情報を更新
+    // useEffect(() => {
+    //     // if (typeof user.userinfo !== "undefined") {
     //     try {
-    //         const user_id: String | null = localStorage.getItem("uid")
-    //         // databaseを参照して取得
+    //         // console.log(`play/${user.user.userinfo}`)
     //         const db = getDatabase()
-    //         const dbRef_play = ref(db, `play/${user_id}/is_exist`)
-    //         await set(dbRef_play, false)
+    //         const dbRef_play = ref(db, `play`)
+    //         // onValueは
+    //         return onChildAdded(dbRef_play, (snapshot) => {
+    //             const user_id = (snapshot.key ?? '')
+    //             usersInfoRef.current[user_id] = snapshot.val()
+    //             console.log("users info = ", usersInfoRef.current)
+    //             // databaseにすでにキャラ情報がある場合
+    //             // if (snapshot.exists()) {
+    //             //     // console.log("exist!!!")
+    //             // } else { // databaseにキャラ情報がない場合
+    //             //     console.log("no info!")
+    //             //     registerPlayerInfo(user.userinfo?.uid)
+    //             // }
+    //         })
     //     } catch (e) {
     //         if (e instanceof FirebaseError) {
-    //             console.log(e)
+    //             console.error(e)
     //         }
+    //         return
     //     }
-    // }
+    //     // }
+    //     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // }, [])
 
-    // ページ遷移時の処理
-    // useEffect(() => {
-    //     console.log("--before unload setting!--", user.userinfo?.uid);
-    //     const handleBeforeUnloadEvent = (event: { preventDefault: () => void; returnValue: string; }) => {
-    //         console.log("You have left the page in 'beforeunload'")
-    //         disconnectPlayer()
-    //         event.preventDefault();
-    //         event.returnValue = '';
-    //     };
 
-    //     // ios safari用
-    //     const handlePageHide = () => {
-    //         console.log("You have left the page in 'page hide'")
-    //         disconnectPlayer()
-    //     };
-
-    //     // スマホ chrome用?
-    //     const handleVisibilityChange = () => {
-    //         console.log("You have left the page in 'visibilitychange'")
-    //         const state = document.visibilityState;
-    //         if (state === 'hidden') {
-    //             // console.log('aaaaaaaaaaaa')
-    //             disconnectPlayer();
-    //         }
-    //     };
-
-    //     window.addEventListener("beforeunload", handleBeforeUnloadEvent);
-    //     window.addEventListener("pagehide", handlePageHide);
-    //     document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    //     return () => {
-    //         window.removeEventListener("beforeunload", handleBeforeUnloadEvent);
-    //         window.removeEventListener("pagehide", handlePageHide);
-    //         document.removeEventListener('visibilitychange', handleVisibilityChange);
-    //     }
-    // }, []);
+    // App内ページの移動やブラウザバック処理
+    useEffect(() => {
+        // App内ページ遷移時に発火
+        const pageChangeHandler = async () => {
+            // console.log("移動！！！！")
+            // console.log((isJoin), (typeof user.userinfo?.uid))
+            if (typeof user.userinfo?.uid !== 'undefined') {
+                // console.log("移動２！！！！！！！！！！！")
+                try {
+                    const user_id: String = user.userinfo?.uid
+                    // databaseを参照して取得
+                    const db = getDatabase()
+                    const dbRef_play = ref(db, `play/${user_id}/`)
+                    await remove(dbRef_play)
+                } catch (e) {
+                    if (e instanceof FirebaseError) {
+                        console.log(e)
+                    }
+                }
+            }
+        }
+        window.addEventListener('popstate', pageChangeHandler, false);
+        nextRouter.events.on('routeChangeStart', pageChangeHandler)
+        return () => {
+            nextRouter.events.off('routeChangeStart', pageChangeHandler)
+            window.removeEventListener('popstate', pageChangeHandler, false);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [nextRouter, usePathRouter]);
 
 
     // ユーザ切断時処理 firebaseで判定
     useEffect(() => {
         if (typeof user.userinfo?.uid !== 'undefined') {
-
-            // ローカルストレージにuidを保存
-            // localStorage.setItem('uid', user.userinfo?.uid)
-
-            // firebaseからデータベース切断を判定
             try {
                 const db = getDatabase();
-                const dbRef_play = ref(db, `play/${user.userinfo?.uid}`);
+                const dbRef_play = ref(db, `play/${user.userinfo.uid}`);
 
-                // 切断時にデータを追加するように設定
-                // onDisconnect(ref(db, `play/${user.userinfo?.uid}/is_exist`)).set("false");
                 // 切断時にデータを削除するように設定
                 onDisconnect(dbRef_play).remove()
             } catch (e) {
@@ -130,7 +137,8 @@ const Page: NextPage = () => {
     }, [user.userinfo?.uid]);
 
 
-    const registerPlayerInfo = async (user_id: string | null | undefined) => {
+    // firebaseに自分の位置情報などを登録
+    const registerPlayerInfo = async (user_id: string) => {
         try {
             // databaseを参照して取得
             const db = getDatabase()
@@ -149,60 +157,71 @@ const Page: NextPage = () => {
     }
 
     // firebaseからフィールドの自分のキャラプレイヤー情報の取得
+    // useEffect(() => {
+    //     if (typeof user.userinfo !== "undefined") {
+    //         try {
+    //             // console.log(`play/${user.user.userinfo}`)
+    //             console.log(`play/${user.userinfo?.uid}`)
+    //             const db = getDatabase()
+    //             const dbRef_play = ref(db, `play/${user.userinfo?.uid}`)
+    //             // onValueは
+    //             return onValue(dbRef_play, (snapshot) => {
+    //                 // databaseにすでにキャラ情報がある場合
+    //                 if (snapshot.exists()) {
+    //                     // console.log("exist!!!")
+    //                 } else { // databaseにキャラ情報がない場合
+    //                     console.log("no info!")
+    //                     registerPlayerInfo(user.userinfo?.uid)
+    //                 }
+    //             })
+    //         } catch (e) {
+    //             if (e instanceof FirebaseError) {
+    //                 console.error(e)
+    //             }
+    //             return
+    //         }
+    //     }
+    //     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // }, [user.username])
+
+    // Player がJoinを押して，かつ認証が完了してuidが取得済みの時
     useEffect(() => {
-        if (typeof user.userinfo !== "undefined") {
-            try {
-                // console.log(`play/${user.user.userinfo}`)
-                console.log(`play/${user.userinfo?.uid}`)
-                const db = getDatabase()
-                const dbRef_play = ref(db, `play/${user.userinfo?.uid}`)
-                // onValueは
-                return onValue(dbRef_play, (snapshot) => {
-                    // databaseにすでにキャラ情報がある場合
-                    if (snapshot.exists()) {
-                        console.log("exist!!!")
-                    } else { // databaseにキャラ情報がない場合
-                        console.log("no info!")
-                        registerPlayerInfo(user.userinfo?.uid)
-                    }
-                })
-            } catch (e) {
-                if (e instanceof FirebaseError) {
-                    console.error(e)
-                }
-                return
+        if ((isJoin) && (typeof user.userinfo?.uid !== 'undefined')) {
+
+            // コントローラー初期値設定
+            const edgeSize = 30
+            // コントローラーサイズを決定
+            controllerSize.current.parent = (innerHeight >= innerWidth) ? (innerWidth / 3) : (innerHeight / 3)
+            controllerSize.current.child = controllerSize.current.parent / 2
+            // コントローラーの位置を決定
+            touchMap.controllerX = edgeSize + controllerSize.current.parent / 2
+            touchMap.controllerY = innerHeight - edgeSize - controllerSize.current.parent / 2
+
+            // コントローラーの外枠の方(parent)の設定
+            if (ControllerRef.current && ControllerRef.current.ParentRef.current) {
+                ControllerRef.current.ParentRef.current.style.width = `${controllerSize.current.parent}px`
+                ControllerRef.current.ParentRef.current.style.height = `${controllerSize.current.parent}px`
+                ControllerRef.current.ParentRef.current.style.left = `${touchMap.controllerX - controllerSize.current.parent / 2}px`
+                ControllerRef.current.ParentRef.current.style.top = `${touchMap.controllerY - controllerSize.current.parent / 2}px`
             }
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user.username])
+            // コントローラーの内側(child, 操作して動く方)の設定
+            if (ControllerRef.current && ControllerRef.current.ChildRef.current) {
+                ControllerRef.current.ChildRef.current.style.width = `${controllerSize.current.child}px`
+                ControllerRef.current.ChildRef.current.style.height = `${controllerSize.current.child}px`
+                ControllerRef.current.ChildRef.current.style.left = `${controllerSize.current.child / 2}px`
+                ControllerRef.current.ChildRef.current.style.top = `${controllerSize.current.child / 2}px`
+            }
+            // console.log("header height = ", headerHeight)
 
-    // コントローラー初期値設定
-    useEffect(() => {
-        const edgeSize = 30
-        // コントローラーサイズを決定
-        controllerSize.current.parent = (innerHeight >= innerWidth) ? (innerWidth / 3) : (innerHeight / 3)
-        controllerSize.current.child = controllerSize.current.parent / 2
-        // コントローラーの位置を決定
-        touchMap.controllerX = edgeSize + controllerSize.current.parent / 2
-        touchMap.controllerY = innerHeight - edgeSize - controllerSize.current.parent / 2
 
-        // コントローラーの外枠の方(parent)の設定
-        if (ControllerRef.current && ControllerRef.current.ParentRef.current) {
-            ControllerRef.current.ParentRef.current.style.width = `${controllerSize.current.parent}px`
-            ControllerRef.current.ParentRef.current.style.height = `${controllerSize.current.parent}px`
-            ControllerRef.current.ParentRef.current.style.left = `${touchMap.controllerX - controllerSize.current.parent / 2}px`
-            ControllerRef.current.ParentRef.current.style.top = `${touchMap.controllerY - controllerSize.current.parent / 2}px`
+            // firebaseに自分の位置情報などを登録
+            registerPlayerInfo(user.userinfo.uid)
+
+
         }
-        // コントローラーの内側(child, 操作して動く方)の設定
-        if (ControllerRef.current && ControllerRef.current.ChildRef.current) {
-            ControllerRef.current.ChildRef.current.style.width = `${controllerSize.current.child}px`
-            ControllerRef.current.ChildRef.current.style.height = `${controllerSize.current.child}px`
-            ControllerRef.current.ChildRef.current.style.left = `${controllerSize.current.child / 2}px`
-            ControllerRef.current.ChildRef.current.style.top = `${controllerSize.current.child / 2}px`
-        }
-        // console.log("header height = ", headerHeight)
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isJoin]) // innerHeight, innerWidthが決定されたあとに実行したい
+    }, [isJoin, user.userinfo?.uid]) // innerHeight, innerWidthが決定されたあとに実行したい
 
 
 

@@ -1,10 +1,10 @@
-import { useRouter as useNextRouter } from 'next/router'
+import { useRouter } from 'next/router'
 import { useCallback } from 'react'
 import type { UrlObject } from 'url'
 import { pagesPath, PagesPath } from '@src/lib/pathpida/$path'
 
-export const useRouter = () => {
-    const nextRouter = useNextRouter()
+export const usePathRouter = () => {
+    const nextRouter = useRouter()
 
     const push = useCallback(
         (url: UrlObject | ((path: PagesPath) => UrlObject)) => {

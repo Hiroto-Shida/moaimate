@@ -20,7 +20,7 @@ import {
     sendEmailVerification,
 } from 'firebase/auth'
 import { FirebaseError } from '@firebase/util'
-import { useRouter } from '@src/hooks/useRouter/useRouter'
+import { usePathRouter } from '@src/hooks/usePathRouter/usePathRouter'
 import { Navigate } from '@src/component/Navigate/Navigate'
 
 export const Page = () => {
@@ -28,7 +28,7 @@ export const Page = () => {
     const [password, setPassword] = useState<string>('')
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const toast = useToast()
-    const { push } = useRouter()
+    const { push } = usePathRouter()
     const actionCodeSettings = {
         url: 'https://www.moaimate.com/',
         handleCodeInApp: false,

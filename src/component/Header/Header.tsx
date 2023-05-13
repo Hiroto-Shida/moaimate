@@ -42,7 +42,7 @@ import { getAuth, signOut } from 'firebase/auth'
 // import { useRouter } from 'next/router'
 // import Link from 'next/link'
 import { Navigate } from '@src/component/Navigate/Navigate'
-import { useRouter } from '@src/hooks/useRouter/useRouter'
+import { usePathRouter } from '@src/hooks/usePathRouter/usePathRouter'
 import { FormEvent, createContext, useEffect, useRef, useState } from 'react'
 import { getDatabase, onChildAdded, onValue, push, set, ref } from '@firebase/database'
 import React from 'react'
@@ -55,7 +55,7 @@ export const Header = () => {
     // const { username } = useAuthContext()
     const [userName, setUserName] = useState<string>('')
     const toast = useToast()
-    const { push } = useRouter()
+    const { push } = usePathRouter()
     const { isOpen, onOpen, onClose } = useDisclosure()
     const btnRef = React.useRef<HTMLButtonElement>(null)
     const [selectedItem, setSelectedItem] = useState<string>('') // 選択したメニューバーなどのボタン情報

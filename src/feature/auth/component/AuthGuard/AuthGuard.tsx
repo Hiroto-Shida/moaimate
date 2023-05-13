@@ -2,7 +2,7 @@ import { useAuthContext } from '@src/feature/auth/provider/AuthProvider'
 // import { useRouter } from 'next/router'
 import type { ReactNode } from 'react'
 import { Box } from '@chakra-ui/react'
-import { useRouter } from '@src/hooks/useRouter/useRouter'
+import { usePathRouter } from '@src/hooks/usePathRouter/usePathRouter'
 
 type Props = {
     children: ReactNode
@@ -10,7 +10,7 @@ type Props = {
 
 export const AuthGuard = ({ children }: Props) => {
     const { user } = useAuthContext()
-    const { push } = useRouter()
+    const { push } = usePathRouter()
     // console.log("emailVerified = ", user.emailVerified)
 
     if (typeof user.userinfo === 'undefined') {

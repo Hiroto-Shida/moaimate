@@ -6,12 +6,23 @@ import { useTouchEvent } from '@src/component/KeyAndTouchEvent/useTouchEvent';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { TextAbovePlayer } from '@src/component/ThreeObject/TextAbovePlayer';
 import { getDatabase, onChildAdded, onValue, push, set, ref } from '@firebase/database'
-import { useAuthContext } from '@src/feature/auth/provider/AuthProvider';
+import { GlobalAuthState, useAuthContext } from '@src/feature/auth/provider/AuthProvider';
 import { FirebaseError } from 'firebase/app';
+import { CameraControls } from '@react-three/drei';
+import { TypeControllerRefs } from '@src/component/KeyAndTouchEvent/Controller';
+import { TypeSetPlayersInfo } from '@src/pages/play';
+
+type Props = {
+    CameraControlRef: React.MutableRefObject<CameraControls | null>
+    ControllerRef: React.MutableRefObject<TypeControllerRefs | null>
+    controllerSize: React.MutableRefObject<{ parent: number; child: number; }>
+    is_touch: Boolean
+    user: GlobalAuthState
+}
 
 // 自分のキャラプレイヤー
-export const Player = ({ CameraControlRef, ControllerRef, controllerSize, is_touch, user }) => {
-    // console.log("-- Player component rendering --")
+export const MainPlayer = ({ CameraControlRef, ControllerRef, controllerSize, is_touch, user }: Props) => {
+    // console.log("-- MainPlayer component rendering --")
 
     const cameraPos = new THREE.Vector3() // カメラの座標
     const MoaiRef = useRef<THREE.Mesh>(null!) // モアイref情報
@@ -26,12 +37,14 @@ export const Player = ({ CameraControlRef, ControllerRef, controllerSize, is_tou
             // databaseを参照して取得
             const db = getDatabase()
             const dbRef_play = ref(db, `play/${user.userinfo?.uid}`)
-            await set(dbRef_play, {
+            const message: TypeSetPlayersInfo = {
                 // 'is_exist': true,
-                'x': MoaiRef.current.position.x,
-                'z': MoaiRef.current.position.z,
-                'angle': MoaiRef.current.rotation.y
-            })
+                x: Math.round(MoaiRef.current.position.x * 100) / 100,
+                z: Math.round(MoaiRef.current.position.z * 100) / 100,
+                angle: Math.round(MoaiRef.current.rotation.y * 100) / 100,
+                name: user.username
+            }
+            await set(dbRef_play, message)
         } catch (e) {
             if (e instanceof FirebaseError) {
                 console.log(e)

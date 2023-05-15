@@ -16,18 +16,27 @@ import { Canvas } from '@react-three/fiber';
 import { Environment, OrbitControls, Text } from '@react-three/drei';
 import { CameraControls } from '@react-three/drei';
 import { Controller, TypeControllerRefs } from '@src/component/KeyAndTouchEvent/Controller';
-import { getDatabase, onChildAdded, onValue, onDisconnect, push, set, ref, remove } from '@firebase/database'
+import { getDatabase, onDisconnect, push, set, ref, remove } from '@firebase/database'
 import { useTouchContext } from '@src/component/KeyAndTouchEvent/TouchProvider'
 import { useTouchEvent } from '@src/component/KeyAndTouchEvent/useTouchEvent';
 import { usePageSize } from '@src/component/PageSizing/usePageSize';
 import { Field } from '@src/component/ThreeObject/Field';
-import { Player } from '@src/component/ThreeObject/Player';
+import { MainPlayer } from '@src/component/ThreeObject/MainPlayer';
 import { AuthGuard } from '@src/feature/auth/component/AuthGuard/AuthGuard';
 import { useAuthContext } from '@src/feature/auth/provider/AuthProvider';
 import { FirebaseError } from 'firebase/app';
 import { usePathRouter } from '@src/hooks/usePathRouter/usePathRouter'
 import { Navigate } from '@src/component/Navigate/Navigate';
 import { useRouter } from 'next/router';
+import { OtherPlayer } from '@src/component/ThreeObject/OtherPlayer';
+
+// database間で送受信するプレイヤー情報
+export type TypeSetPlayersInfo = {
+    x: number
+    z: number
+    angle: number
+    name: string
+}
 
 const Page: NextPage = () => {
     // console.log("-- play page rendering --")
@@ -42,7 +51,7 @@ const Page: NextPage = () => {
     const touchMap = useTouchEvent() // タップ情報
     const controllerSize = useRef<{ parent: number; child: number }>({ parent: 0, child: 0 }) // コントローラのサイズref
 
-    // const usersInfoRef = useRef({}) // playページの参加プレイヤーの情報
+    const [isRegisterPlayer, setIsRegisterPlayer] = useState<Boolean>(false) // 自分のユーザ情報(位置など)をfirebaseに登録したか
 
     // ヘッダーの高さ，ページサイズ取得
     const [headerHeight, innerHeight, innerWidth] = usePageSize();
@@ -55,44 +64,11 @@ const Page: NextPage = () => {
         push((path) => path.$url())
     }
 
-
-    // フィールドに新しいPlayerが参加した時，参加キャラ情報を更新
-    // useEffect(() => {
-    //     // if (typeof user.userinfo !== "undefined") {
-    //     try {
-    //         // console.log(`play/${user.user.userinfo}`)
-    //         const db = getDatabase()
-    //         const dbRef_play = ref(db, `play`)
-    //         // onValueは
-    //         return onChildAdded(dbRef_play, (snapshot) => {
-    //             const user_id = (snapshot.key ?? '')
-    //             usersInfoRef.current[user_id] = snapshot.val()
-    //             console.log("users info = ", usersInfoRef.current)
-    //             // databaseにすでにキャラ情報がある場合
-    //             // if (snapshot.exists()) {
-    //             //     // console.log("exist!!!")
-    //             // } else { // databaseにキャラ情報がない場合
-    //             //     console.log("no info!")
-    //             //     registerPlayerInfo(user.userinfo?.uid)
-    //             // }
-    //         })
-    //     } catch (e) {
-    //         if (e instanceof FirebaseError) {
-    //             console.error(e)
-    //         }
-    //         return
-    //     }
-    //     // }
-    //     // eslint-disable-next-line react-hooks/exhaustive-deps
-    // }, [])
-
-
     // App内ページの移動やブラウザバック処理
     useEffect(() => {
         // App内ページ遷移時に発火
         const pageChangeHandler = async () => {
             // console.log("移動！！！！")
-            // console.log((isJoin), (typeof user.userinfo?.uid))
             if (typeof user.userinfo?.uid !== 'undefined') {
                 // console.log("移動２！！！！！！！！！！！")
                 try {
@@ -143,46 +119,21 @@ const Page: NextPage = () => {
             // databaseを参照して取得
             const db = getDatabase()
             const dbRef_play = ref(db, `play/${user_id}`)
-            await set(dbRef_play, {
-                // 'is_exist': true,
-                'x': 0,
-                'z': 0,
-                'angle': 0
-            })
+            const message: TypeSetPlayersInfo = {
+                x: 0,
+                z: 0,
+                angle: 0,
+                name: user.username
+            }
+            await set(dbRef_play, message)
+            console.log("register myPlayer info")
+            setIsRegisterPlayer(true)
         } catch (e) {
             if (e instanceof FirebaseError) {
                 console.log(e)
             }
         }
     }
-
-    // firebaseからフィールドの自分のキャラプレイヤー情報の取得
-    // useEffect(() => {
-    //     if (typeof user.userinfo !== "undefined") {
-    //         try {
-    //             // console.log(`play/${user.user.userinfo}`)
-    //             console.log(`play/${user.userinfo?.uid}`)
-    //             const db = getDatabase()
-    //             const dbRef_play = ref(db, `play/${user.userinfo?.uid}`)
-    //             // onValueは
-    //             return onValue(dbRef_play, (snapshot) => {
-    //                 // databaseにすでにキャラ情報がある場合
-    //                 if (snapshot.exists()) {
-    //                     // console.log("exist!!!")
-    //                 } else { // databaseにキャラ情報がない場合
-    //                     console.log("no info!")
-    //                     registerPlayerInfo(user.userinfo?.uid)
-    //                 }
-    //             })
-    //         } catch (e) {
-    //             if (e instanceof FirebaseError) {
-    //                 console.error(e)
-    //             }
-    //             return
-    //         }
-    //     }
-    //     // eslint-disable-next-line react-hooks/exhaustive-deps
-    // }, [user.username])
 
     // Player がJoinを押して，かつ認証が完了してuidが取得済みの時
     useEffect(() => {
@@ -216,7 +167,6 @@ const Page: NextPage = () => {
 
             // firebaseに自分の位置情報などを登録
             registerPlayerInfo(user.userinfo.uid)
-
 
         }
 
@@ -265,14 +215,21 @@ const Page: NextPage = () => {
                         {/* <spotLight intensity={5} angle={0.1} penumbra={1} position={[10, 15, 10]} color='#fff' castShadow /> */}
                         <Suspense fallback={null}>
                             <Field />
-                            {isJoin ? (
-                                <Player
-                                    CameraControlRef={CameraControlRef}
-                                    ControllerRef={ControllerRef}
-                                    controllerSize={controllerSize}
-                                    is_touch={is_touch}
-                                    user={user}
-                                />
+                            {(isJoin && (typeof user.userinfo?.uid !== 'undefined')) ? (
+                                <>
+                                    <MainPlayer
+                                        CameraControlRef={CameraControlRef}
+                                        ControllerRef={ControllerRef}
+                                        controllerSize={controllerSize}
+                                        is_touch={is_touch}
+                                        user={user}
+                                    />
+                                    <OtherPlayer
+                                        isRegisterPlayer={isRegisterPlayer}
+                                        mainPlayerUid={user.userinfo.uid}
+                                        MainPlayerCameraRef={CameraControlRef}
+                                    />
+                                </>
                             ) : (
                                 <></>
                             )}

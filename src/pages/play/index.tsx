@@ -18,7 +18,7 @@ import { CameraControls } from '@react-three/drei';
 import { Controller, TypeControllerRefs } from '@src/component/KeyAndTouchEvent/Controller';
 import { getDatabase, onDisconnect, push, set, ref, remove } from '@firebase/database'
 import { useTouchContext } from '@src/component/KeyAndTouchEvent/TouchProvider'
-import { useTouchEvent } from '@src/component/KeyAndTouchEvent/useTouchEvent';
+// import { useTouchEvent } from '@src/component/KeyAndTouchEvent/useTouchEvent';
 import { usePageSize } from '@src/component/PageSizing/usePageSize';
 import { Field } from '@src/component/ThreeObject/Field';
 import { MainPlayer } from '@src/component/ThreeObject/MainPlayer';
@@ -38,6 +38,12 @@ export type TypeSetPlayersInfo = {
     name: string
 }
 
+// コントローラのサイズタイプ
+export type TypeControllerSize = {
+    parent: number
+    child: number
+}
+
 const Page: NextPage = () => {
     // console.log("-- play page rendering --")
     const [isJoin, setIsJoin] = useState<Boolean>(false) // 最初のJoinモーダル用(beforeunloadイベントの発火用にも必要)
@@ -47,9 +53,9 @@ const Page: NextPage = () => {
     const { user } = useAuthContext() // ユーザ情報の取得
     const CameraControlRef = useRef<CameraControls | null>(null) // カメラのref．回転や方向の参照や調整に使用
     const is_touch = useTouchContext() // タッチできるか否か
+    // const touchMap = useTouchEvent() // タップ情報
     const ControllerRef = useRef<TypeControllerRefs | null>(null) // コントローラーのref
-    const touchMap = useTouchEvent() // タップ情報
-    const controllerSize = useRef<{ parent: number; child: number }>({ parent: 0, child: 0 }) // コントローラのサイズref
+    const controllerSize = useRef<TypeControllerSize>({ parent: 0, child: 0 }) // コントローラのサイズref
 
     const [isRegisterPlayer, setIsRegisterPlayer] = useState<Boolean>(false) // 自分のユーザ情報(位置など)をfirebaseに登録したか
 
@@ -138,38 +144,9 @@ const Page: NextPage = () => {
     // Player がJoinを押して，かつ認証が完了してuidが取得済みの時
     useEffect(() => {
         if ((isJoin) && (typeof user.userinfo?.uid !== 'undefined')) {
-
-            // コントローラー初期値設定
-            const edgeSize = 30
-            // コントローラーサイズを決定
-            controllerSize.current.parent = (innerHeight >= innerWidth) ? (innerWidth / 3) : (innerHeight / 3)
-            controllerSize.current.child = controllerSize.current.parent / 2
-            // コントローラーの位置を決定
-            touchMap.controllerX = edgeSize + controllerSize.current.parent / 2
-            touchMap.controllerY = innerHeight - edgeSize - controllerSize.current.parent / 2
-
-            // コントローラーの外枠の方(parent)の設定
-            if (ControllerRef.current && ControllerRef.current.ParentRef.current) {
-                ControllerRef.current.ParentRef.current.style.width = `${controllerSize.current.parent}px`
-                ControllerRef.current.ParentRef.current.style.height = `${controllerSize.current.parent}px`
-                ControllerRef.current.ParentRef.current.style.left = `${touchMap.controllerX - controllerSize.current.parent / 2}px`
-                ControllerRef.current.ParentRef.current.style.top = `${touchMap.controllerY - controllerSize.current.parent / 2}px`
-            }
-            // コントローラーの内側(child, 操作して動く方)の設定
-            if (ControllerRef.current && ControllerRef.current.ChildRef.current) {
-                ControllerRef.current.ChildRef.current.style.width = `${controllerSize.current.child}px`
-                ControllerRef.current.ChildRef.current.style.height = `${controllerSize.current.child}px`
-                ControllerRef.current.ChildRef.current.style.left = `${controllerSize.current.child / 2}px`
-                ControllerRef.current.ChildRef.current.style.top = `${controllerSize.current.child / 2}px`
-            }
-            // console.log("header height = ", headerHeight)
-
-
             // firebaseに自分の位置情報などを登録
             registerPlayerInfo(user.userinfo.uid)
-
         }
-
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isJoin, user.userinfo?.uid]) // innerHeight, innerWidthが決定されたあとに実行したい
 
@@ -241,7 +218,10 @@ const Page: NextPage = () => {
                     </Canvas>
                 </div>
                 {(is_touch && isJoin) ? (
-                    <Controller ref={ControllerRef} />
+                    <Controller
+                        ref={ControllerRef}
+                        controllerSize={controllerSize}
+                    />
                 ) : (
                     <></>
                 )}

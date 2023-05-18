@@ -99,7 +99,8 @@ export const MainPlayer = ({ CameraControlRef, ControllerRef, controllerSize, is
     // const checkPos = (delta: number) => {
     //     // CameraControlRef.current?.getPosition(cameraPos) // カメラの座標を取得
     //     // console.log(cameraPos.y)
-    //     console.log('cameraRef = ', CameraControlRef.current?.active)
+    //     // console.log('cameraRef = ', CameraControlRef.current?.active)
+    //     console.log('keyboard = ', keyMap)
     // }
 
     // joystickコントローラー(スマホ)操作時の処理
@@ -153,11 +154,11 @@ export const MainPlayer = ({ CameraControlRef, ControllerRef, controllerSize, is
         // keyMap['Space'] && (checkPos(delta)); // デバッグ用
         // (checkPos(delta)); // デバッグ用
         (CameraControlRef.current?.active) && (updateTextAngle())
-        keyMap['ArrowUp'] && (updateMoaiPos(0, delta));
-        keyMap['ArrowDown'] && (updateMoaiPos(Math.PI, delta));
-        keyMap['ArrowRight'] && (updateMoaiPos(-Math.PI / 2, delta));
-        keyMap['ArrowLeft'] && (updateMoaiPos(Math.PI / 2, delta));
-        (keyMap['ArrowUp'] || keyMap['ArrowDown'] || keyMap['ArrowRight'] || keyMap['ArrowLeft']) && updateMoaiAngle(); // 斜め処理のため必要
+        keyMap['KeyW'] && (updateMoaiPos(0, delta)); // 上
+        keyMap['KeyS'] && (updateMoaiPos(Math.PI, delta)); // 下
+        keyMap['KeyD'] && (updateMoaiPos(-Math.PI / 2, delta)); // 右
+        keyMap['KeyA'] && (updateMoaiPos(Math.PI / 2, delta)); // 左
+        (keyMap['KeyA'] || keyMap['KeyS'] || keyMap['KeyD'] || keyMap['KeyA']) && updateMoaiAngle(); // 斜め処理のため必要
     })
 
     // モアイ(キャラ生成)

@@ -18,10 +18,11 @@ type Props = {
     controllerSize: React.MutableRefObject<{ parent: number; child: number; }>
     is_touch: Boolean
     user: GlobalAuthState
+    uuid: string
 }
 
 // 自分のキャラプレイヤー
-export const MainPlayer = ({ CameraControlRef, ControllerRef, controllerSize, is_touch, user }: Props) => {
+export const MainPlayer = ({ CameraControlRef, ControllerRef, controllerSize, is_touch, user, uuid }: Props) => {
     // console.log("-- MainPlayer component rendering --")
 
     const cameraPos = new THREE.Vector3() // カメラの座標
@@ -36,7 +37,8 @@ export const MainPlayer = ({ CameraControlRef, ControllerRef, controllerSize, is
         try {
             // databaseを参照して取得
             const db = getDatabase()
-            const dbRef_play = ref(db, `play/${user.userinfo?.uid}`)
+            // const dbRef_play = ref(db, `play/${user.userinfo?.uid}`)
+            const dbRef_play = ref(db, `play/${uuid}`)
             const message: TypeSetPlayersInfo = {
                 // 'is_exist': true,
                 x: Math.round(MoaiRef.current.position.x * 100) / 100,

@@ -19,6 +19,15 @@ import { MoaiModel } from '@src/component/ThreeObject/MoaiModel';
 
 const Page: NextPage = () => {
 
+  useEffect(() => {
+    const uuid = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxx'.replace(/[x]/g, function changeString() {
+      return ((new Date().getTime() + Math.random() * 16) % 16 | 0).toString(16);
+    });
+    console.log(uuid)
+    // setGuestUuid(uuid)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // ヘッダーの高さ，ページサイズ取得
   const [headerHeight, innerHeight,] = usePageSize();
   const canvasStyles = {

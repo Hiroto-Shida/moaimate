@@ -18,7 +18,7 @@ export type GlobalAuthState = {
 }
 const initialState: GlobalAuthState = {
     userinfo: undefined,
-    username: 'initname'
+    username: 'NoName'
 }
 
 export type GlobalsetState = {

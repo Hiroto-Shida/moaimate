@@ -44,6 +44,8 @@ export type TypeControllerSize = {
     child: number
 }
 
+
+
 const Page: NextPage = () => {
     // console.log("-- play page rendering --")
     const [isJoin, setIsJoin] = useState<Boolean>(false) // 最初のJoinモーダル用(beforeunloadイベントの発火用にも必要)
@@ -65,23 +67,61 @@ const Page: NextPage = () => {
         height: `${innerHeight - headerHeight - 10}px`, // ヘッダーの高さ，ページサイズでCanvasサイズを調整
     }
 
+    const [uuid, setUuid] = useState<string>('') // 自分のuuid
+    // ゲスト用のuuidを生成
+    useEffect(() => {
+        const tmpuuid = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxx'.replace(/[x]/g, function changeString() {
+            return ((new Date().getTime() + Math.random() * 16) % 16 | 0).toString(16);
+        });
+        // console.log(uuid)
+        setUuid(tmpuuid)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     // モーダルを閉じる時の処理
     const onCloseModal = () => {
         push((path) => path.$url())
     }
 
     // App内ページの移動やブラウザバック処理
+    // useEffect(() => {
+    //     // App内ページ遷移時に発火
+    //     const pageChangeHandler = async () => {
+    //         // console.log("移動！！！！")
+    //         if (typeof user.userinfo?.uid !== 'undefined') {
+    //             // console.log("移動２！！！！！！！！！！！")
+    //             try {
+    //                 const user_id: String = user.userinfo?.uid
+    //                 // databaseを参照して取得
+    //                 const db = getDatabase()
+    //                 const dbRef_play = ref(db, `play/${user_id}/`)
+    //                 await remove(dbRef_play)
+    //             } catch (e) {
+    //                 if (e instanceof FirebaseError) {
+    //                     console.log(e)
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     window.addEventListener('popstate', pageChangeHandler, false);
+    //     nextRouter.events.on('routeChangeStart', pageChangeHandler)
+    //     return () => {
+    //         nextRouter.events.off('routeChangeStart', pageChangeHandler)
+    //         window.removeEventListener('popstate', pageChangeHandler, false);
+    //     }
+    //     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // }, [nextRouter, usePathRouter]);
     useEffect(() => {
         // App内ページ遷移時に発火
         const pageChangeHandler = async () => {
             // console.log("移動！！！！")
-            if (typeof user.userinfo?.uid !== 'undefined') {
+            if (uuid !== '') {
                 // console.log("移動２！！！！！！！！！！！")
                 try {
-                    const user_id: String = user.userinfo?.uid
+                    // const user_id: string = user.userinfo?.uid
                     // databaseを参照して取得
                     const db = getDatabase()
-                    const dbRef_play = ref(db, `play/${user_id}/`)
+                    const dbRef_play = ref(db, `play/${uuid}/`)
                     await remove(dbRef_play)
                 } catch (e) {
                     if (e instanceof FirebaseError) {
@@ -101,11 +141,27 @@ const Page: NextPage = () => {
 
 
     // ユーザ切断時処理 firebaseで判定
+    // useEffect(() => {
+    //     if (typeof user.userinfo?.uid !== 'undefined') {
+    //         try {
+    //             const db = getDatabase();
+    //             const dbRef_play = ref(db, `play/${user.userinfo.uid}`);
+
+    //             // 切断時にデータを削除するように設定
+    //             onDisconnect(dbRef_play).remove()
+    //         } catch (e) {
+    //             if (e instanceof FirebaseError) {
+    //                 console.error(e);
+    //             }
+    //             return;
+    //         }
+    //     }
+    // }, [user.userinfo?.uid]);
     useEffect(() => {
-        if (typeof user.userinfo?.uid !== 'undefined') {
+        if (uuid !== '') {
             try {
                 const db = getDatabase();
-                const dbRef_play = ref(db, `play/${user.userinfo.uid}`);
+                const dbRef_play = ref(db, `play/${uuid}`);
 
                 // 切断時にデータを削除するように設定
                 onDisconnect(dbRef_play).remove()
@@ -116,7 +172,8 @@ const Page: NextPage = () => {
                 return;
             }
         }
-    }, [user.userinfo?.uid]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isJoin]);
 
 
     // firebaseに自分の位置情報などを登録
@@ -142,90 +199,112 @@ const Page: NextPage = () => {
     }
 
     // Player がJoinを押して，かつ認証が完了してuidが取得済みの時
+    // useEffect(() => {
+    //     if ((isJoin) && (typeof user.userinfo?.uid !== 'undefined')) {
+    //         // firebaseに自分の位置情報などを登録
+    //         registerPlayerInfo(user.userinfo.uid)
+    //     }
+    //     console.log("isJoin!!!!!")
+    //     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // }, [isJoin, user.userinfo?.uid]) // innerHeight, innerWidthが決定されたあとに実行したい
+
+    // Player がJoinを押した時
     useEffect(() => {
-        if ((isJoin) && (typeof user.userinfo?.uid !== 'undefined')) {
-            // firebaseに自分の位置情報などを登録
-            registerPlayerInfo(user.userinfo.uid)
+        if (isJoin) {
+            if (typeof user.userinfo?.uid !== 'undefined') {
+                // firebaseに自分の位置情報などを登録
+                setUuid(user.userinfo?.uid)
+                registerPlayerInfo(user.userinfo.uid)
+            } else {
+                registerPlayerInfo(uuid)
+            }
+            // console.log("isJoin!!!!!")
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isJoin, user.userinfo?.uid]) // innerHeight, innerWidthが決定されたあとに実行したい
-
+    }, [isJoin]) // innerHeight, innerWidthが決定されたあとに実行したい
 
 
     return (
         <>
-            <AuthGuard>
-                {/* 開始時のモーダル */}
-                <Modal
-                    closeOnOverlayClick={false}
-                    isOpen={!isJoin}
-                    onClose={onCloseModal}
-                    isCentered
-                >
-                    <ModalOverlay />
-                    <ModalContent>
-                        <ModalBody>
-                            <Center>
+            {/* <AuthGuard> */}
+            {/* 開始時のモーダル */}
+            <Modal
+                closeOnOverlayClick={false}
+                isOpen={!isJoin}
+                onClose={onCloseModal}
+                isCentered
+            >
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalBody>
+                        <Center>
+                            {user.userinfo?.uid ? (
                                 <Button colorScheme='blue' fontSize='lg' size='lg' m={5} onClick={() => setIsJoin(true)}>
-                                    Join!
+                                    Join
                                 </Button>
-                            </Center>
-                            <Center>
-                                <Navigate href={(path) => path.$url()}>
-                                    <Link m={5} lineHeight={1} onClick={onCloseModal}>Back to Top</Link>
-                                </Navigate>
-                            </Center>
-                        </ModalBody>
-                    </ModalContent>
-                </Modal>
-                {/* メイン Canvas */}
-                <div className={styles.playGlobe} style={canvasStyles}>
-                    <Canvas shadows dpr={[1, 2]} camera={{ position: [+7, 3, 0], fov: 50 }}>
-                        {/* <Canvas shadows dpr={[1, 2]}> */}
-                        <CameraControls
-                            ref={CameraControlRef}
-                            enabled={true}
-                            minPolarAngle={Math.PI / 3} // 上下回転を固定
-                            maxPolarAngle={Math.PI / 2.1} // 上下回転を固定
-                        />
-                        <ambientLight intensity={0.7} />
-                        {/* <spotLight intensity={5} angle={0.1} penumbra={1} position={[10, 15, 10]} color='#fff' castShadow /> */}
-                        <Suspense fallback={null}>
-                            <Field />
-                            {(isJoin && (typeof user.userinfo?.uid !== 'undefined')) ? (
-                                <>
-                                    <MainPlayer
-                                        CameraControlRef={CameraControlRef}
-                                        ControllerRef={ControllerRef}
-                                        controllerSize={controllerSize}
-                                        is_touch={is_touch}
-                                        user={user}
-                                    />
-                                    <OtherPlayer
-                                        isRegisterPlayer={isRegisterPlayer}
-                                        mainPlayerUid={user.userinfo.uid}
-                                        MainPlayerCameraRef={CameraControlRef}
-                                    />
-                                </>
                             ) : (
-                                <></>
+                                <Button colorScheme='blue' fontSize='lg' size='lg' m={5} onClick={() => setIsJoin(true)}>
+                                    Join for Guest
+                                </Button>
                             )}
-                            <Environment preset="city" />
-                        </Suspense>
-                        {/* axesHelperメモ：軸を表示 X(赤), Y(緑), Z(青), args={[線の長さ]} */}
-                        <axesHelper args={[10]} />
-                        {/* <gridHelper args={[20, 20, 0xff0000, 'teal']} /> */}
-                    </Canvas>
-                </div>
-                {(is_touch && isJoin) ? (
-                    <Controller
-                        ref={ControllerRef}
-                        controllerSize={controllerSize}
+                        </Center>
+                        <Center>
+                            <Navigate href={(path) => path.$url()}>
+                                <Link m={5} lineHeight={1} onClick={onCloseModal}>Back to Top</Link>
+                            </Navigate>
+                        </Center>
+                    </ModalBody>
+                </ModalContent>
+            </Modal>
+            {/* メイン Canvas */}
+            <div className={styles.playGlobe} style={canvasStyles}>
+                <Canvas shadows dpr={[1, 2]} camera={{ position: [+7, 3, 0], fov: 50 }}>
+                    {/* <Canvas shadows dpr={[1, 2]}> */}
+                    <CameraControls
+                        ref={CameraControlRef}
+                        enabled={true}
+                        minPolarAngle={Math.PI / 3} // 上下回転を固定
+                        maxPolarAngle={Math.PI / 2.1} // 上下回転を固定
                     />
-                ) : (
-                    <></>
-                )}
-            </AuthGuard>
+                    <ambientLight intensity={0.7} />
+                    {/* <spotLight intensity={5} angle={0.1} penumbra={1} position={[10, 15, 10]} color='#fff' castShadow /> */}
+                    <Suspense fallback={null}>
+                        <Field />
+                        {(isJoin) ? (
+                            <>
+                                <MainPlayer
+                                    CameraControlRef={CameraControlRef}
+                                    ControllerRef={ControllerRef}
+                                    controllerSize={controllerSize}
+                                    is_touch={is_touch}
+                                    user={user}
+                                    uuid={uuid}
+                                />
+                                <OtherPlayer
+                                    isRegisterPlayer={isRegisterPlayer}
+                                    mainPlayerUid={uuid}
+                                    MainPlayerCameraRef={CameraControlRef}
+                                />
+                            </>
+                        ) : (
+                            <></>
+                        )}
+                        <Environment preset="city" />
+                    </Suspense>
+                    {/* axesHelperメモ：軸を表示 X(赤), Y(緑), Z(青), args={[線の長さ]} */}
+                    <axesHelper args={[10]} />
+                    {/* <gridHelper args={[20, 20, 0xff0000, 'teal']} /> */}
+                </Canvas>
+            </div>
+            {(is_touch && isJoin) ? (
+                <Controller
+                    ref={ControllerRef}
+                    controllerSize={controllerSize}
+                />
+            ) : (
+                <></>
+            )}
+            {/* </AuthGuard> */}
         </>
     )
 
